@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import '../../search/presentation/search_bar_widget.dart';
 import '../../../core/widgets/app_navbar.dart';
 import '../../../core/routes/app_routes.dart';
@@ -6,6 +7,8 @@ import '../../../di/service_locator.dart';
 import '../../catalog_layout/domain/models/catalog_section.dart';
 import '../../category/domain/models/category_section_response.dart';
 import '../../category/domain/models/category.dart';
+import '../../subcategory/domain/models/subcategory_response.dart';
+import '../../subcategory/domain/models/subcategory.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -51,6 +54,8 @@ class HomeContent extends StatefulWidget {
 class _HomeContentState extends State<HomeContent> {
   List<CatalogSection> _catalogSections = [];
   CategorySectionResponse? _categorySectionResponse;
+  Map<String, SubCategoryResponse> _subCategoriesMap = {}; // categoryId -> SubCategoryResponse
+  Map<String, bool> _loadingSubCategories = {}; // categoryId -> isLoading
   bool _isLoading = true;
   bool _isLoadingCategories = false;
   String? _errorMessage;
@@ -107,10 +112,36 @@ class _HomeContentState extends State<HomeContent> {
         _categorySectionResponse = categoryResponse;
         _isLoadingCategories = false;
       });
+
+      // Load subcategories for each category one by one
+      for (var category in categoryResponse.categories) {
+        _loadSubCategories(category.categoryId);
+      }
     } catch (e) {
       setState(() {
         _categoryErrorMessage = e.toString();
         _isLoadingCategories = false;
+      });
+    }
+  }
+
+  Future<void> _loadSubCategories(String categoryId) async {
+    try {
+      setState(() {
+        _loadingSubCategories[categoryId] = true;
+      });
+
+      final subCategoryResponse = await ServiceLocator().getSubCategoriesUseCase(categoryId);
+      
+      setState(() {
+        _subCategoriesMap[categoryId] = subCategoryResponse;
+        _loadingSubCategories[categoryId] = false;
+      });
+    } catch (e) {
+      setState(() {
+        _loadingSubCategories[categoryId] = false;
+        // Don't show error for subcategories, just log it
+        print('Error loading subcategories for category $categoryId: $e');
       });
     }
   }
@@ -324,24 +355,155 @@ class _HomeContentState extends State<HomeContent> {
       return const SizedBox.shrink();
     }
 
-    // Display category titles as a list
+    // Display category titles with their subcategories, sorted by displayOrder
+    final sortedCategories = List<Category>.from(_categorySectionResponse!.categories)
+      ..sort((a, b) => a.displayOrder.compareTo(b.displayOrder));
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        children: _categorySectionResponse!.categories.map((category) {
-          return Padding(
-            padding: const EdgeInsets.only(bottom: 8),
+        children: sortedCategories.map((category) {
+          return _buildCategoryWithSubcategories(category);
+        }).toList(),
+      ),
+    );
+  }
+
+  Widget _buildCategoryWithSubcategories(Category category) {
+    final subCategoryResponse = _subCategoriesMap[category.categoryId];
+    final isLoadingSubCategories = _loadingSubCategories[category.categoryId] ?? false;
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Category Title
+          Text(
+            category.name,
+            style: TextStyle(
+              fontSize: 14,
+              color: Colors.grey[800],
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+          const SizedBox(height: 12),
+          // Subcategories Grid
+          if (isLoadingSubCategories)
+            const Padding(
+              padding: EdgeInsets.only(left: 16),
+              child: SizedBox(
+                height: 20,
+                width: 20,
+                child: CircularProgressIndicator(strokeWidth: 2),
+              ),
+            )
+          else if (subCategoryResponse != null && subCategoryResponse.subCategories.isNotEmpty)
+            _buildSubCategoriesGrid(subCategoryResponse.subCategories)
+          else if (subCategoryResponse != null && subCategoryResponse.subCategories.isEmpty)
+            Padding(
+              padding: const EdgeInsets.only(left: 16),
+              child: Text(
+                'No subcategories',
+                style: TextStyle(
+                  fontSize: 12,
+                  color: Colors.grey[500],
+                  fontStyle: FontStyle.italic,
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSubCategoriesGrid(List<SubCategory> subCategories) {
+    // Sort by displayOrder
+    final sortedSubCategories = List<SubCategory>.from(subCategories)
+      ..sort((a, b) => a.displayOrder.compareTo(b.displayOrder));
+
+    return GridView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 4,
+        crossAxisSpacing: 12,
+        mainAxisSpacing: 12,
+        childAspectRatio: 0.85,
+      ),
+      itemCount: sortedSubCategories.length,
+      itemBuilder: (context, index) {
+        return _buildSubCategoryCard(sortedSubCategories[index]);
+      },
+    );
+  }
+
+  Widget _buildSubCategoryCard(SubCategory subCategory) {
+    final imageUrl = subCategory.imageUrl.isNotEmpty
+        ? subCategory.imageUrl.first
+        : null;
+
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.grey[50],
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.grey[200]!),
+      ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          // Image or Icon
+          Container(
+            width: 50,
+            height: 50,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: imageUrl != null
+                ? ClipRRect(
+                    borderRadius: BorderRadius.circular(8),
+                    child: CachedNetworkImage(
+                      imageUrl: imageUrl,
+                      fit: BoxFit.cover,
+                      placeholder: (context, url) => Container(
+                        color: Colors.grey[200],
+                        child: const Center(
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        ),
+                      ),
+                      errorWidget: (context, url, error) => Icon(
+                        Icons.image_not_supported,
+                        color: Colors.grey[400],
+                        size: 28,
+                      ),
+                    ),
+                  )
+                : Icon(
+                    Icons.category,
+                    color: Colors.green[700],
+                    size: 28,
+                  ),
+          ),
+          const SizedBox(height: 8),
+          // Subcategory Name
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 4),
             child: Text(
-              category.name,
+              subCategory.name,
+              textAlign: TextAlign.center,
               style: TextStyle(
-                fontSize: 14,
+                fontSize: 11,
                 color: Colors.grey[800],
                 fontWeight: FontWeight.w500,
               ),
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
             ),
-          );
-        }).toList(),
+          ),
+        ],
       ),
     );
   }
