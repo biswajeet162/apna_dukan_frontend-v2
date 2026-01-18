@@ -4,6 +4,8 @@ import '../../../core/widgets/app_navbar.dart';
 import '../../../core/routes/app_routes.dart';
 import '../../../di/service_locator.dart';
 import '../../catalog_layout/domain/models/catalog_section.dart';
+import '../../category/domain/models/category_section_response.dart';
+import '../../category/domain/models/category.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -48,8 +50,11 @@ class HomeContent extends StatefulWidget {
 
 class _HomeContentState extends State<HomeContent> {
   List<CatalogSection> _catalogSections = [];
+  CategorySectionResponse? _categorySectionResponse;
   bool _isLoading = true;
+  bool _isLoadingCategories = false;
   String? _errorMessage;
+  String? _categoryErrorMessage;
 
   @override
   void initState() {
@@ -70,10 +75,42 @@ class _HomeContentState extends State<HomeContent> {
         _catalogSections = sections;
         _isLoading = false;
       });
+
+      // Find first PRODUCT_CATEGORY section and load its categories
+      try {
+        final productCategorySection = sections.firstWhere(
+          (section) => section.sectionCode == 'PRODUCT_CATEGORY',
+        );
+        _loadCategories(productCategorySection.sectionId);
+      } catch (e) {
+        // No PRODUCT_CATEGORY section found, skip loading categories
+        print('No PRODUCT_CATEGORY section found: $e');
+      }
     } catch (e) {
       setState(() {
         _errorMessage = e.toString();
         _isLoading = false;
+      });
+    }
+  }
+
+  Future<void> _loadCategories(String sectionId) async {
+    try {
+      setState(() {
+        _isLoadingCategories = true;
+        _categoryErrorMessage = null;
+      });
+
+      final categoryResponse = await ServiceLocator().getCategoriesUseCase(sectionId);
+      
+      setState(() {
+        _categorySectionResponse = categoryResponse;
+        _isLoadingCategories = false;
+      });
+    } catch (e) {
+      setState(() {
+        _categoryErrorMessage = e.toString();
+        _isLoadingCategories = false;
       });
     }
   }
@@ -205,9 +242,12 @@ class _HomeContentState extends State<HomeContent> {
   }
 
   Widget _buildCatalogSection(CatalogSection section) {
+    final bool isProductCategory = section.sectionCode == 'PRODUCT_CATEGORY';
+    
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        // Section Title
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           child: Column(
@@ -234,36 +274,142 @@ class _HomeContentState extends State<HomeContent> {
             ],
           ),
         ),
-        // TODO: Replace with actual category items when categories API is implemented
-        // For now, showing a placeholder
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: Colors.grey[50],
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: Colors.grey[200]!),
+        // Show categories only for PRODUCT_CATEGORY section
+        if (isProductCategory)
+          _buildCategoriesForSection()
+        else
+          const SizedBox(height: 8),
+        const SizedBox(height: 16),
+      ],
+    );
+  }
+
+  Widget _buildCategoriesForSection() {
+    if (_isLoadingCategories) {
+      return const Padding(
+        padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        child: Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    if (_categoryErrorMessage != null) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        child: Column(
+          children: [
+            Text(
+              'Error loading categories: $_categoryErrorMessage',
+              style: TextStyle(color: Colors.red[700], fontSize: 12),
             ),
-            child: Row(
+            const SizedBox(height: 8),
+            ElevatedButton(
+              onPressed: () {
+                try {
+                  final productCategorySection = _catalogSections.firstWhere(
+                    (section) => section.sectionCode == 'PRODUCT_CATEGORY',
+                  );
+                  _loadCategories(productCategorySection.sectionId);
+                } catch (e) {
+                  print('No PRODUCT_CATEGORY section found: $e');
+                }
+              },
+              child: const Text('Retry'),
+            ),
+          ],
+        ),
+      );
+    }
+
+    if (_categorySectionResponse == null || _categorySectionResponse!.categories.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    // Display category titles as a list
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: _categorySectionResponse!.categories.map((category) {
+          return Padding(
+            padding: const EdgeInsets.only(bottom: 8),
+            child: Text(
+              category.name,
+              style: TextStyle(
+                fontSize: 14,
+                color: Colors.grey[800],
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          );
+        }).toList(),
+      ),
+    );
+  }
+
+
+  Widget _buildCategoryListItem(Category category) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      decoration: BoxDecoration(
+        color: Colors.grey[50],
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: Colors.grey[200]!),
+      ),
+      child: Row(
+        children: [
+          Icon(
+            Icons.category,
+            color: Colors.green[700],
+            size: 24,
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Icon(Icons.info_outline, color: Colors.grey[600]),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Text(
-                    'Section Code: ${section.sectionCode} | Display Order: ${section.displayOrder}',
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Colors.grey[700],
-                    ),
+                Text(
+                  category.name,
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: Colors.grey[800],
+                    fontWeight: FontWeight.w500,
                   ),
                 ),
+                if (category.description != null && category.description!.isNotEmpty)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 4),
+                    child: Text(
+                      category.description!,
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.grey[600],
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                if (category.code != null && category.code.isNotEmpty)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 4),
+                    child: Text(
+                      'Code: ${category.code}',
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: Colors.grey[500],
+                      ),
+                    ),
+                  ),
               ],
             ),
           ),
-        ),
-        const SizedBox(height: 16),
-      ],
+          Icon(
+            Icons.chevron_right,
+            color: Colors.grey[400],
+            size: 20,
+          ),
+        ],
+      ),
     );
   }
 
@@ -293,7 +439,7 @@ class _HomeContentState extends State<HomeContent> {
           ),
           itemCount: categories.length,
           itemBuilder: (context, index) {
-            return _buildCategoryCard(categories[index]);
+            return _buildCategoryItemCard(categories[index]);
           },
         ),
         const SizedBox(height: 16),
@@ -301,7 +447,7 @@ class _HomeContentState extends State<HomeContent> {
     );
   }
 
-  Widget _buildCategoryCard(CategoryItem category) {
+  Widget _buildCategoryItemCard(CategoryItem category) {
     return Container(
       decoration: BoxDecoration(
         color: Colors.grey[50],
