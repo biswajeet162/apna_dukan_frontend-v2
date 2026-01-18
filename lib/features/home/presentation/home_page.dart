@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import '../../search/presentation/search_bar_widget.dart';
 import '../../../core/widgets/app_navbar.dart';
 import '../../../core/routes/app_routes.dart';
+import '../../../di/service_locator.dart';
+import '../../catalog_layout/domain/models/catalog_section.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -37,8 +39,44 @@ class _HomePageState extends State<HomePage> {
   }
 }
 
-class HomeContent extends StatelessWidget {
+class HomeContent extends StatefulWidget {
   const HomeContent({super.key});
+
+  @override
+  State<HomeContent> createState() => _HomeContentState();
+}
+
+class _HomeContentState extends State<HomeContent> {
+  List<CatalogSection> _catalogSections = [];
+  bool _isLoading = true;
+  String? _errorMessage;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadCatalogLayout();
+  }
+
+  Future<void> _loadCatalogLayout() async {
+    try {
+      setState(() {
+        _isLoading = true;
+        _errorMessage = null;
+      });
+
+      final sections = await ServiceLocator().getCatalogLayoutUseCase();
+      
+      setState(() {
+        _catalogSections = sections;
+        _isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        _errorMessage = e.toString();
+        _isLoading = false;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -53,21 +91,38 @@ class HomeContent extends StatelessWidget {
             // Search Bar
             const SearchBarWidget(),
             
-            // Category Grid
-            _buildCategorySection(
-              'Grocery & Kitchen',
-              _getGroceryCategories(),
-            ),
-            
-            _buildCategorySection(
-              'Beauty & Personal Care',
-              _getBeautyCategories(),
-            ),
-            
-            _buildCategorySection(
-              'Household Essentials',
-              _getHouseholdCategories(),
-            ),
+            // Catalog Sections from API
+            if (_isLoading)
+              const Padding(
+                padding: EdgeInsets.all(32.0),
+                child: Center(child: CircularProgressIndicator()),
+              )
+            else if (_errorMessage != null)
+              Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  children: [
+                    Text(
+                      'Error loading catalog sections',
+                      style: TextStyle(color: Colors.red[700]),
+                    ),
+                    const SizedBox(height: 8),
+                    ElevatedButton(
+                      onPressed: _loadCatalogLayout,
+                      child: const Text('Retry'),
+                    ),
+                  ],
+                ),
+              )
+            else if (_catalogSections.isEmpty)
+              const Padding(
+                padding: EdgeInsets.all(16.0),
+                child: Center(
+                  child: Text('No catalog sections available'),
+                ),
+              )
+            else
+              ..._catalogSections.map((section) => _buildCatalogSection(section)).toList(),
             
             const SizedBox(height: 20),
           ],
@@ -146,6 +201,69 @@ class HomeContent extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildCatalogSection(CatalogSection section) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                section.title,
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              if (section.description != null && section.description!.isNotEmpty)
+                Padding(
+                  padding: const EdgeInsets.only(top: 4),
+                  child: Text(
+                    section.description!,
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Colors.grey[600],
+                    ),
+                  ),
+                ),
+            ],
+          ),
+        ),
+        // TODO: Replace with actual category items when categories API is implemented
+        // For now, showing a placeholder
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Colors.grey[50],
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: Colors.grey[200]!),
+            ),
+            child: Row(
+              children: [
+                Icon(Icons.info_outline, color: Colors.grey[600]),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    'Section Code: ${section.sectionCode} | Display Order: ${section.displayOrder}',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Colors.grey[700],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+        const SizedBox(height: 16),
+      ],
     );
   }
 
