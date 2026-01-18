@@ -355,6 +355,16 @@ class _HomeContentState extends State<HomeContent> {
       return const SizedBox.shrink();
     }
 
+    // Get the PRODUCT_CATEGORY section to access layoutType and scrollType
+    CatalogSection? productCategorySection;
+    try {
+      productCategorySection = _catalogSections.firstWhere(
+        (section) => section.sectionCode == 'PRODUCT_CATEGORY',
+      );
+    } catch (e) {
+      // Section not found, use defaults
+    }
+
     // Display category titles with their subcategories, sorted by displayOrder
     final sortedCategories = List<Category>.from(_categorySectionResponse!.categories)
       ..sort((a, b) => a.displayOrder.compareTo(b.displayOrder));
@@ -364,15 +374,19 @@ class _HomeContentState extends State<HomeContent> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: sortedCategories.map((category) {
-          return _buildCategoryWithSubcategories(category);
+          return _buildCategoryWithSubcategories(category, productCategorySection);
         }).toList(),
       ),
     );
   }
 
-  Widget _buildCategoryWithSubcategories(Category category) {
+  Widget _buildCategoryWithSubcategories(Category category, CatalogSection? catalogSection) {
     final subCategoryResponse = _subCategoriesMap[category.categoryId];
     final isLoadingSubCategories = _loadingSubCategories[category.categoryId] ?? false;
+
+    // Get layout type and scroll type from catalog section, default to TWO_ROW and HORIZONTAL
+    final layoutType = catalogSection?.layoutType ?? LayoutType.twoRow;
+    final scrollType = catalogSection?.scrollType ?? ScrollType.horizontal;
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 16),
@@ -400,7 +414,7 @@ class _HomeContentState extends State<HomeContent> {
               ),
             )
           else if (subCategoryResponse != null && subCategoryResponse.subCategories.isNotEmpty)
-            _buildSubCategoriesGrid(subCategoryResponse.subCategories)
+            _buildSubCategoriesGrid(subCategoryResponse.subCategories, layoutType, scrollType)
           else if (subCategoryResponse != null && subCategoryResponse.subCategories.isEmpty)
             Padding(
               padding: const EdgeInsets.only(left: 16),
@@ -418,25 +432,147 @@ class _HomeContentState extends State<HomeContent> {
     );
   }
 
-  Widget _buildSubCategoriesGrid(List<SubCategory> subCategories) {
+  Widget _buildSubCategoriesGrid(
+    List<SubCategory> subCategories,
+    LayoutType layoutType,
+    ScrollType scrollType,
+  ) {
     // Sort by displayOrder
     final sortedSubCategories = List<SubCategory>.from(subCategories)
       ..sort((a, b) => a.displayOrder.compareTo(b.displayOrder));
 
-    return GridView.builder(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 4,
-        crossAxisSpacing: 12,
-        mainAxisSpacing: 12,
-        childAspectRatio: 0.85,
+    // If less than 5 items, always show in single line horizontal
+    if (sortedSubCategories.length < 5) {
+      return _buildSingleLineHorizontal(sortedSubCategories);
+    }
+
+    // Determine number of rows based on layoutType (only if >= 5 items)
+    int rows = 2; // Default to TWO_ROW
+    switch (layoutType) {
+      case LayoutType.singleRow:
+        rows = 1;
+        break;
+      case LayoutType.twoRow:
+        rows = 2;
+        break;
+      case LayoutType.threeRow:
+        rows = 3;
+        break;
+      case LayoutType.fourRow:
+        rows = 4;
+        break;
+    }
+
+    const itemsPerRow = 4;
+    const spacing = 12.0;
+    final screenWidth = MediaQuery.of(context).size.width;
+    final padding = 32.0; // 16 on each side
+    final itemWidth = ((screenWidth - padding - (3 * spacing)) / 4);
+    final itemHeight = itemWidth / 0.85; // Based on aspect ratio
+    final totalHeight = (rows * itemHeight) + ((rows - 1) * spacing);
+
+    // Calculate total columns needed for all items
+    // Items flow row-wise: Row 0 has items 0, 1, 2, 3... Row 1 has items (totalColumns), (totalColumns+1)...
+    // For TWO_ROW with 20 items: Row 0 has items 0-9 (10 items), Row 1 has items 10-19 (10 items)
+    final totalColumns = (sortedSubCategories.length / rows).ceil();
+    final totalWidth = (totalColumns * itemWidth) + ((totalColumns - 1) * spacing) + padding;
+
+    // If horizontal scroll, show all items in specified number of rows
+    if (scrollType == ScrollType.horizontal) {
+      return SizedBox(
+        height: totalHeight,
+        child: SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: SizedBox(
+            width: totalWidth,
+            child: Column(
+              children: List.generate(rows, (rowIndex) {
+                return Row(
+                  children: List.generate(totalColumns, (colIndex) {
+                    // Calculate item index: row-wise distribution
+                    // Row 0: items 0, 1, 2, 3... (totalColumns items)
+                    // Row 1: items totalColumns, totalColumns+1, totalColumns+2... (totalColumns items)
+                    final itemIndex = rowIndex * totalColumns + colIndex;
+                    if (itemIndex >= sortedSubCategories.length) {
+                      return SizedBox(width: itemWidth, height: itemHeight);
+                    }
+                    return Padding(
+                      padding: EdgeInsets.only(
+                        right: colIndex < totalColumns - 1 ? spacing : 0,
+                        bottom: rowIndex < rows - 1 ? spacing : 0,
+                      ),
+                      child: SizedBox(
+                        width: itemWidth,
+                        height: itemHeight,
+                        child: _buildSubCategoryCard(sortedSubCategories[itemIndex]),
+                      ),
+                    );
+                  }),
+                );
+              }),
+            ),
+          ),
+        ),
+      );
+    } else {
+      // Vertical scroll - show all items in grid with specified rows
+      return SizedBox(
+        height: totalHeight,
+        child: GridView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: itemsPerRow,
+            crossAxisSpacing: spacing,
+            mainAxisSpacing: spacing,
+            childAspectRatio: 0.85,
+          ),
+          itemCount: sortedSubCategories.length,
+          itemBuilder: (context, index) {
+            return _buildSubCategoryCard(sortedSubCategories[index]);
+          },
+        ),
+      );
+    }
+  }
+
+  Widget _buildSingleLineHorizontal(List<SubCategory> subCategories) {
+    const spacing = 12.0;
+    final screenWidth = MediaQuery.of(context).size.width;
+    const padding = 32.0; // 16 on each side
+    final itemWidth = ((screenWidth - padding - (3 * spacing)) / 4);
+    final itemHeight = itemWidth / 0.85;
+    final totalWidth = (subCategories.length * itemWidth) + 
+                       ((subCategories.length - 1) * spacing) + 
+                       padding;
+
+    return SizedBox(
+      height: itemHeight,
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        child: SizedBox(
+          width: totalWidth,
+          child: Row(
+            children: subCategories.asMap().entries.map((entry) {
+              final index = entry.key;
+              final subCategory = entry.value;
+              return Padding(
+                padding: EdgeInsets.only(
+                  right: index < subCategories.length - 1 ? spacing : 0,
+                ),
+                child: SizedBox(
+                  width: itemWidth,
+                  height: itemHeight,
+                  child: _buildSubCategoryCard(subCategory),
+                ),
+              );
+            }).toList(),
+          ),
+        ),
       ),
-      itemCount: sortedSubCategories.length,
-      itemBuilder: (context, index) {
-        return _buildSubCategoryCard(sortedSubCategories[index]);
-      },
     );
   }
 
