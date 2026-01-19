@@ -149,24 +149,46 @@ class _HomeContentState extends State<HomeContent> {
   @override
   Widget build(BuildContext context) {
     return SafeArea(
-      child: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Top Header Section
-            _buildTopHeader(),
-            
-            // Search Bar
-            const SearchBarWidget(),
-            
-            // Catalog Sections from API
-            if (_isLoading)
-              const Padding(
+      child: CustomScrollView(
+        slivers: [
+          // Header Section (Scrolls up)
+          SliverToBoxAdapter(
+            child: Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    Colors.green[700]!, // Dark green at top
+                    Colors.green[600]!,
+                    Colors.green[500]!,
+                    Colors.green[400]!,
+                    Colors.green[300]!, // Light green at bottom
+                    Colors.green[50]!, // Very light at the end
+                  ],
+                ),
+              ),
+              child: _buildTopHeader(),
+            ),
+          ),
+          
+          // Sticky Search Bar
+          SliverPersistentHeader(
+            pinned: true,
+            delegate: _StickySearchBarDelegate(),
+          ),
+          
+          // Catalog Sections Content
+          if (_isLoading)
+            const SliverToBoxAdapter(
+              child: Padding(
                 padding: EdgeInsets.all(32.0),
                 child: Center(child: CircularProgressIndicator()),
-              )
-            else if (_errorMessage != null)
-              Padding(
+              ),
+            )
+          else if (_errorMessage != null)
+            SliverToBoxAdapter(
+              child: Padding(
                 padding: const EdgeInsets.all(16.0),
                 child: Column(
                   children: [
@@ -181,20 +203,31 @@ class _HomeContentState extends State<HomeContent> {
                     ),
                   ],
                 ),
-              )
-            else if (_catalogSections.isEmpty)
-              const Padding(
+              ),
+            )
+          else if (_catalogSections.isEmpty)
+            const SliverToBoxAdapter(
+              child: Padding(
                 padding: EdgeInsets.all(16.0),
                 child: Center(
                   child: Text('No catalog sections available'),
                 ),
-              )
-            else
-              ..._catalogSections.map((section) => _buildCatalogSection(section)).toList(),
-            
-            const SizedBox(height: 20),
-          ],
-        ),
+              ),
+            )
+          else
+            SliverList(
+              delegate: SliverChildBuilderDelegate(
+                (context, index) {
+                  return _buildCatalogSection(_catalogSections[index]);
+                },
+                childCount: _catalogSections.length,
+              ),
+            ),
+          
+          const SliverToBoxAdapter(
+            child: SizedBox(height: 20),
+          ),
+        ],
       ),
     );
   }
@@ -216,19 +249,19 @@ class _HomeContentState extends State<HomeContent> {
                     style: TextStyle(
                       fontSize: 24,
                       fontWeight: FontWeight.bold,
-                      color: Colors.green[700],
+                      color: Colors.white,
                     ),
                   ),
                   const SizedBox(height: 4),
                   Row(
                     children: [
-                      Icon(Icons.location_on, size: 16, color: Colors.grey[600]),
+                      Icon(Icons.location_on, size: 16, color: Colors.white),
                       const SizedBox(width: 4),
                       Text(
                         '64, Ring Road',
                         style: TextStyle(
                           fontSize: 14,
-                          color: Colors.grey[600],
+                          color: Colors.white,
                         ),
                       ),
                     ],
@@ -243,18 +276,18 @@ class _HomeContentState extends State<HomeContent> {
                       vertical: 6,
                     ),
                     decoration: BoxDecoration(
-                      color: Colors.green[50],
+                      color: Colors.white.withOpacity(0.2),
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: Row(
                       children: [
                         Icon(Icons.account_balance_wallet,
-                            size: 18, color: Colors.green[700]),
+                            size: 18, color: Colors.white),
                         const SizedBox(width: 4),
                         Text(
                           '₹0',
                           style: TextStyle(
-                            color: Colors.green[700],
+                            color: Colors.white,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
@@ -262,7 +295,7 @@ class _HomeContentState extends State<HomeContent> {
                     ),
                   ),
                   const SizedBox(width: 8),
-                  Icon(Icons.person, size: 28, color: Colors.grey[600]),
+                  Icon(Icons.person, size: 28, color: Colors.white),
                 ],
               ),
             ],
@@ -441,14 +474,33 @@ class _HomeContentState extends State<HomeContent> {
     final sortedSubCategories = List<SubCategory>.from(subCategories)
       ..sort((a, b) => a.displayOrder.compareTo(b.displayOrder));
 
-    // Always show in 4-column grid, items flow left to right
-    // After 4 items in first row, move to next row
-    // No horizontal scrolling, all items visible
-    const itemsPerRow = 4; // Always 4 columns
+    // If less than 5 items, always show in single line horizontal
+    if (sortedSubCategories.length < 5) {
+      return _buildSingleLineHorizontal(sortedSubCategories);
+    }
+
+    // Determine number of rows based on layoutType (only if >= 5 items)
+    int rows = 2; // Default to TWO_ROW
+    switch (layoutType) {
+      case LayoutType.singleRow:
+        rows = 1;
+        break;
+      case LayoutType.twoRow:
+        rows = 2;
+        break;
+      case LayoutType.threeRow:
+        rows = 3;
+        break;
+      case LayoutType.fourRow:
+        rows = 4;
+        break;
+    }
+
+    const itemsPerRow = 4;
     const spacing = 12.0;
 
-    // Show all items in a fixed 4-column grid that wraps naturally
-    // Items flow: 1, 2, 3, 4 (row 1), then 5, 6, 7, 8 (row 2), etc.
+    // Always show fixed grid without horizontal scrolling
+    // Items will be displayed in the specified number of rows
     return GridView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
@@ -757,6 +809,36 @@ class CategoryItem {
   final IconData icon;
 
   CategoryItem(this.name, this.icon);
+}
+
+// Sticky Search Bar Delegate
+class _StickySearchBarDelegate extends SliverPersistentHeaderDelegate {
+  @override
+  Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [
+            Colors.green[50]!,
+            Colors.green[100]!,
+          ],
+        ),
+      ),
+      padding: const EdgeInsets.only(left: 0.0, right: 0.0, top: 12.0, bottom: 0.0),
+      child: const SearchBarWidget(),
+    );
+  }
+
+  @override
+  double get maxExtent => 70.0; // 60 (search bar) + 12 (top)
+
+  @override
+  double get minExtent => 70.0;
+
+  @override
+  bool shouldRebuild(covariant SliverPersistentHeaderDelegate oldDelegate) => false;
 }
 
 class CategoriesPage extends StatelessWidget {
