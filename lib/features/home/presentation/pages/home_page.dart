@@ -427,15 +427,18 @@ class _HomeContentState extends State<HomeContent> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Category Title
-          Text(
-            category.name,
-            style: TextStyle(
-              fontSize: 14,
-              color: Colors.grey[800],
-              fontWeight: FontWeight.w500,
+          Padding(
+            padding: const EdgeInsets.only(left: 8),
+            child: Text(
+              category.name,
+              style: TextStyle(
+                fontSize: 18,
+                color: Colors.grey[800],
+                fontWeight: FontWeight.w900,
+              ),
             ),
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 18),
           // Subcategories Grid
           if (isLoadingSubCategories)
             const Padding(
@@ -488,7 +491,7 @@ class _HomeContentState extends State<HomeContent> {
         gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: 4,
           crossAxisSpacing: 8,
-          mainAxisSpacing: 4,
+          mainAxisSpacing: 0,
           childAspectRatio: 0.58,
         ),
         itemCount: sortedSubCategories.length,
@@ -531,7 +534,7 @@ class _HomeContentState extends State<HomeContent> {
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: itemsPerRow,
         crossAxisSpacing: 8,
-        mainAxisSpacing: 4,
+        mainAxisSpacing: 0,
         childAspectRatio: 0.58,
       ),
       itemCount: sortedSubCategories.length,
@@ -678,12 +681,15 @@ class _HomeContentState extends State<HomeContent> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  category.name,
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: Colors.grey[800],
-                    fontWeight: FontWeight.w500,
+                Padding(
+                  padding: const EdgeInsets.only(left: 8),
+                  child: Text(
+                    category.name,
+                    style: TextStyle(
+                      fontSize: 20,
+                      color: Colors.grey[800],
+                      fontWeight: FontWeight.w900,
+                    ),
                   ),
                 ),
                 if (category.description != null && category.description!.isNotEmpty)
@@ -728,12 +734,12 @@ class _HomeContentState extends State<HomeContent> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
+          padding: const EdgeInsets.only(left: 16, right: 8, top: 12, bottom: 12),
           child: Text(
             title,
             style: const TextStyle(
               fontSize: 18,
-              fontWeight: FontWeight.bold,
+              fontWeight: FontWeight.w900,
             ),
           ),
         ),
