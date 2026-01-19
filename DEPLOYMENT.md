@@ -58,12 +58,31 @@ Or use the build script:
 
 **IMPORTANT**: Android APKs **always use production backend by default**. This ensures all released APKs connect to the production backend.
 
-### Production Build (Default - Recommended)
+### Debug Build (For Development/Testing)
+Build a debug APK with production backend:
 ```bash
+flutter clean
+flutter build apk --debug --dart-define=ENV=prod
+```
+
+Or use the dedicated build script (automatically cleans cache):
+```bash
+# Windows
+build-android-debug.bat
+
+# Linux/Mac
+./build-android-debug.sh
+```
+
+**Note**: Always run `flutter clean` before building if you're seeing an older version of the app. The debug APK will be located at: `build/app/outputs/flutter-apk/app-debug.apk`
+
+### Production Build (Release - Recommended)
+```bash
+flutter clean
 flutter build apk --release --dart-define=ENV=prod
 ```
 
-Or use the dedicated build script:
+Or use the dedicated build script (automatically cleans cache):
 ```bash
 # Windows
 build-android-prod.bat
@@ -72,11 +91,12 @@ build-android-prod.bat
 ./build-android-prod.sh
 ```
 
-**Note**: Even without `--dart-define=ENV=prod`, Android builds default to production environment.
+**Note**: Even without `--dart-define=ENV=prod`, Android builds default to production environment. The release APK will be located at: `build/app/outputs/flutter-apk/app-release.apk`
 
 ### Local Build (For Testing Only)
 Only use this for local development/testing with a local backend:
 ```bash
+flutter clean
 flutter build apk --release --dart-define=ENV=local
 ```
 
@@ -88,6 +108,30 @@ build-android-local.bat
 # Linux/Mac
 ./build-android-local.sh
 ```
+
+### Troubleshooting: Old APK Version
+
+If you're seeing an older version of the app when installing the APK:
+
+1. **Clean the build cache first**:
+   ```bash
+   flutter clean
+   ```
+
+2. **Rebuild the APK**:
+   ```bash
+   flutter build apk --debug --dart-define=ENV=prod
+   ```
+
+3. **Uninstall the old app from your device** before installing the new APK
+
+4. **Use `flutter install`** instead of manually installing the APK:
+   ```bash
+   flutter install
+   ```
+   This ensures the latest build is installed on your connected device.
+
+5. **Check the APK timestamp**: The APK file modification time should match when you built it. If it's old, the build didn't complete properly.
 
 ## Environment Detection
 
