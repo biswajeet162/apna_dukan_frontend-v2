@@ -5,10 +5,11 @@ enum Environment {
 }
 
 class AppConfig {
-  // Get environment from compile-time constant or default to local
+  // Get environment from compile-time constant or default to prod
+  // Android APKs should always use production backend
   static Environment get _currentEnvironment {
-    const env = String.fromEnvironment('ENV', defaultValue: 'local');
-    return env == 'prod' ? Environment.prod : Environment.local;
+    const env = String.fromEnvironment('ENV', defaultValue: 'prod');
+    return env == 'local' ? Environment.local : Environment.prod;
   }
 
   static Environment get currentEnvironment => _currentEnvironment;

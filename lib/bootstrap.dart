@@ -7,8 +7,9 @@ void bootstrap() {
   ServiceLocator().init();
   
   // Environment is automatically detected from compile-time constants
-  // Use --dart-define=ENV=prod for production builds
-  // Use --dart-define=ENV=local (or omit) for local builds
+  // Default: Production (Android APKs always use production backend)
+  // Use --dart-define=ENV=local for local development/testing
+  // Use --dart-define=ENV=prod to explicitly set production (default)
   print('Running in ${AppConfig.currentEnvironment.name} environment');
   print('API Base URL: ${AppConfig.apiBaseUrl}');
 }

@@ -56,23 +56,45 @@ Or use the build script:
 
 ## Android App Build
 
-For Android builds, you can specify the environment:
+**IMPORTANT**: Android APKs **always use production backend by default**. This ensures all released APKs connect to the production backend.
 
-### Local (for testing with local backend)
+### Production Build (Default - Recommended)
+```bash
+flutter build apk --release --dart-define=ENV=prod
+```
+
+Or use the dedicated build script:
+```bash
+# Windows
+build-android-prod.bat
+
+# Linux/Mac
+./build-android-prod.sh
+```
+
+**Note**: Even without `--dart-define=ENV=prod`, Android builds default to production environment.
+
+### Local Build (For Testing Only)
+Only use this for local development/testing with a local backend:
 ```bash
 flutter build apk --release --dart-define=ENV=local
 ```
 
-### Production (for release)
+Or use the dedicated build script:
 ```bash
-flutter build apk --release --dart-define=ENV=prod
+# Windows
+build-android-local.bat
+
+# Linux/Mac
+./build-android-local.sh
 ```
 
 ## Environment Detection
 
 The app automatically detects the environment from the `ENV` compile-time constant:
+- **Default**: Production environment (for Android APKs)
+- If `ENV=local` is explicitly set, it uses the local backend URL
 - If `ENV=prod` is set, it uses the production backend URL
-- Otherwise, it defaults to local environment
 
 The environment is set at build time and cannot be changed at runtime for security reasons.
 
