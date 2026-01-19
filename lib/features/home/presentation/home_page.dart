@@ -441,115 +441,29 @@ class _HomeContentState extends State<HomeContent> {
     final sortedSubCategories = List<SubCategory>.from(subCategories)
       ..sort((a, b) => a.displayOrder.compareTo(b.displayOrder));
 
-    // If less than 5 items, always show in single line horizontal
-    if (sortedSubCategories.length < 5) {
-      return _buildSingleLineHorizontal(sortedSubCategories);
-    }
-
-    // Determine number of rows based on layoutType (only if >= 5 items)
-    int rows = 2; // Default to TWO_ROW
-    switch (layoutType) {
-      case LayoutType.singleRow:
-        rows = 1;
-        break;
-      case LayoutType.twoRow:
-        rows = 2;
-        break;
-      case LayoutType.threeRow:
-        rows = 3;
-        break;
-      case LayoutType.fourRow:
-        rows = 4;
-        break;
-    }
-
-    const itemsPerRow = 4;
+    // Always show in 4-column grid, items flow left to right
+    // After 4 items in first row, move to next row
+    // No horizontal scrolling, all items visible
+    const itemsPerRow = 4; // Always 4 columns
     const spacing = 12.0;
 
-    // Calculate items that fit in visible area (rows * itemsPerRow)
-    final itemsInVisibleArea = rows * itemsPerRow;
-    
-    // If all items fit in visible area, show fixed grid without scrolling
-    if (sortedSubCategories.length <= itemsInVisibleArea) {
-      return GridView.builder(
-        shrinkWrap: true,
-        physics: const NeverScrollableScrollPhysics(),
-        padding: const EdgeInsets.symmetric(horizontal: 16),
-        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: itemsPerRow,
-          crossAxisSpacing: spacing,
-          mainAxisSpacing: spacing,
-          childAspectRatio: 0.85,
-        ),
-        itemCount: sortedSubCategories.length,
-        itemBuilder: (context, index) {
-          return _buildSubCategoryCard(sortedSubCategories[index]);
-        },
-      );
-    }
-
-    // If more items than visible area, use horizontal scroll
-    final screenWidth = MediaQuery.of(context).size.width;
-    const padding = 32.0; // 16 on each side
-    final itemWidth = ((screenWidth - padding - (3 * spacing)) / 4);
-    final itemHeight = itemWidth / 0.85;
-    final totalHeight = (rows * itemHeight) + ((rows - 1) * spacing);
-    final totalColumns = (sortedSubCategories.length / rows).ceil();
-    final totalWidth = (totalColumns * itemWidth) + ((totalColumns - 1) * spacing) + padding;
-
-    // Horizontal scroll for items beyond visible area
-    if (scrollType == ScrollType.horizontal) {
-      return SizedBox(
-        height: totalHeight,
-        child: SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: SizedBox(
-            width: totalWidth,
-            child: Column(
-              children: List.generate(rows, (rowIndex) {
-                return Row(
-                  children: List.generate(totalColumns, (colIndex) {
-                    final itemIndex = rowIndex * totalColumns + colIndex;
-                    if (itemIndex >= sortedSubCategories.length) {
-                      return SizedBox(width: itemWidth, height: itemHeight);
-                    }
-                    return Padding(
-                      padding: EdgeInsets.only(
-                        right: colIndex < totalColumns - 1 ? spacing : 0,
-                        bottom: rowIndex < rows - 1 ? spacing : 0,
-                      ),
-                      child: SizedBox(
-                        width: itemWidth,
-                        height: itemHeight,
-                        child: _buildSubCategoryCard(sortedSubCategories[itemIndex]),
-                      ),
-                    );
-                  }),
-                );
-              }),
-            ),
-          ),
-        ),
-      );
-    } else {
-      // Vertical scroll - show all items in grid with specified rows
-      return GridView.builder(
-        shrinkWrap: true,
-        physics: const NeverScrollableScrollPhysics(),
-        padding: const EdgeInsets.symmetric(horizontal: 16),
-        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: itemsPerRow,
-          crossAxisSpacing: spacing,
-          mainAxisSpacing: spacing,
-          childAspectRatio: 0.85,
-        ),
-        itemCount: sortedSubCategories.length,
-        itemBuilder: (context, index) {
-          return _buildSubCategoryCard(sortedSubCategories[index]);
-        },
-      );
-    }
+    // Show all items in a fixed 4-column grid that wraps naturally
+    // Items flow: 1, 2, 3, 4 (row 1), then 5, 6, 7, 8 (row 2), etc.
+    return GridView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: itemsPerRow,
+        crossAxisSpacing: spacing,
+        mainAxisSpacing: spacing,
+        childAspectRatio: 0.85,
+      ),
+      itemCount: sortedSubCategories.length,
+      itemBuilder: (context, index) {
+        return _buildSubCategoryCard(sortedSubCategories[index]);
+      },
+    );
   }
 
   Widget _buildSingleLineHorizontal(List<SubCategory> subCategories) {
