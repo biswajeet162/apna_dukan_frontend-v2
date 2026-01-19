@@ -488,7 +488,7 @@ class _HomeContentState extends State<HomeContent> {
         gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: 4,
           crossAxisSpacing: 8,
-          mainAxisSpacing: 12,
+          mainAxisSpacing: 4,
           childAspectRatio: 0.58,
         ),
         itemCount: sortedSubCategories.length,
@@ -531,7 +531,7 @@ class _HomeContentState extends State<HomeContent> {
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: itemsPerRow,
         crossAxisSpacing: 8,
-        mainAxisSpacing: 12,
+        mainAxisSpacing: 4,
         childAspectRatio: 0.58,
       ),
       itemCount: sortedSubCategories.length,
