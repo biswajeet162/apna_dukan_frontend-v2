@@ -403,7 +403,7 @@ class _HomeContentState extends State<HomeContent> {
       ..sort((a, b) => a.displayOrder.compareTo(b.displayOrder));
 
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 4),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: sortedCategories.map((category) {
@@ -484,12 +484,12 @@ class _HomeContentState extends State<HomeContent> {
       return GridView.builder(
         shrinkWrap: true,
         physics: const NeverScrollableScrollPhysics(),
-        padding: const EdgeInsets.symmetric(horizontal: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 4),
         gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: 4,
           crossAxisSpacing: 8,
           mainAxisSpacing: 12,
-          childAspectRatio: 0.85,
+          childAspectRatio: 0.70,
         ),
         itemCount: sortedSubCategories.length,
         itemBuilder: (context, index) {
@@ -527,12 +527,12 @@ class _HomeContentState extends State<HomeContent> {
     return GridView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
-      padding: const EdgeInsets.symmetric(horizontal: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 4),
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: itemsPerRow,
         crossAxisSpacing: 8,
         mainAxisSpacing: 12,
-        childAspectRatio: 0.85,
+        childAspectRatio: 0.70,
       ),
       itemCount: sortedSubCategories.length,
       itemBuilder: (context, index) {
@@ -555,7 +555,7 @@ class _HomeContentState extends State<HomeContent> {
       height: itemHeight,
       child: SingleChildScrollView(
         scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(horizontal: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 4),
         child: SizedBox(
           width: totalWidth,
           child: Row(
@@ -585,13 +585,14 @@ class _HomeContentState extends State<HomeContent> {
         : null;
 
     return Column(
+      mainAxisSize: MainAxisSize.min,
       mainAxisAlignment: MainAxisAlignment.start,
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         // Image Container with green background - ONLY contains the image
         Container(
-          width: 80,
-          height: 80,
+          width: 90,
+          height: 90,
           decoration: BoxDecoration(
             color: Colors.green[50],
             borderRadius: BorderRadius.circular(12),
@@ -621,30 +622,32 @@ class _HomeContentState extends State<HomeContent> {
                         errorWidget: (context, url, error) => Icon(
                           Icons.image_not_supported,
                           color: Colors.grey[400],
-                          size: 42,
+                          size: 48,
                         ),
                       ),
                     )
                   : Icon(
                       Icons.category,
                       color: Colors.green[700],
-                      size: 42,
+                      size: 48,
                     ),
             ),
           ),
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 6),
         // Subcategory Name - Completely outside the green box
-        Text(
-          subCategory.name,
-          textAlign: TextAlign.center,
-          style: TextStyle(
-            fontSize: 11,
-            color: Colors.grey[800],
-            fontWeight: FontWeight.bold,
+        Flexible(
+          child: Text(
+            subCategory.name,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 11,
+              color: Colors.grey[800],
+              fontWeight: FontWeight.bold,
+            ),
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
           ),
-          maxLines: 2,
-          overflow: TextOverflow.ellipsis,
         ),
       ],
     );
