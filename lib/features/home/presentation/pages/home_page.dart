@@ -586,9 +586,9 @@ class _HomeContentState extends State<HomeContent> {
 
     return Container(
       decoration: BoxDecoration(
-        color: Colors.grey[50],
+        color: Colors.green[50],
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.grey[200]!),
+        border: Border.all(color: Colors.green[200]!),
       ),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -640,7 +640,7 @@ class _HomeContentState extends State<HomeContent> {
               style: TextStyle(
                 fontSize: 11,
                 color: Colors.grey[800],
-                fontWeight: FontWeight.w500,
+                fontWeight: FontWeight.bold,
               ),
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
