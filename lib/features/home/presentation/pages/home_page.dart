@@ -584,70 +584,69 @@ class _HomeContentState extends State<HomeContent> {
         ? subCategory.imageUrl.first
         : null;
 
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.green[50],
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.green[200]!),
-      ),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          // Image or Icon
-          Container(
-            width: 65,
-            height: 65,
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: imageUrl != null
-                ? ClipRRect(
-                    borderRadius: BorderRadius.circular(8),
-                    child: CachedNetworkImage(
-                      imageUrl: imageUrl,
-                      fit: BoxFit.cover,
-                      width: 65,
-                      height: 65,
-                      placeholder: (context, url) => Container(
-                        color: Colors.grey[200],
-                        width: 65,
-                        height: 65,
-                        child: const Center(
-                          child: CircularProgressIndicator(strokeWidth: 2),
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        // Image Container with green background - ONLY contains the image
+        Container(
+          width: 80,
+          height: 80,
+          decoration: BoxDecoration(
+            color: Colors.green[50],
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: Colors.green[200]!),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Container(
+              width: double.infinity,
+              height: double.infinity,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: imageUrl != null
+                  ? ClipRRect(
+                      borderRadius: BorderRadius.circular(8),
+                      child: CachedNetworkImage(
+                        imageUrl: imageUrl,
+                        fit: BoxFit.cover,
+                        placeholder: (context, url) => Container(
+                          color: Colors.grey[200],
+                          child: const Center(
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          ),
+                        ),
+                        errorWidget: (context, url, error) => Icon(
+                          Icons.image_not_supported,
+                          color: Colors.grey[400],
+                          size: 42,
                         ),
                       ),
-                      errorWidget: (context, url, error) => Icon(
-                        Icons.image_not_supported,
-                        color: Colors.grey[400],
-                        size: 36,
-                      ),
+                    )
+                  : Icon(
+                      Icons.category,
+                      color: Colors.green[700],
+                      size: 42,
                     ),
-                  )
-                : Icon(
-                    Icons.category,
-                    color: Colors.green[700],
-                    size: 36,
-                  ),
-          ),
-          const SizedBox(height: 8),
-          // Subcategory Name
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 4),
-            child: Text(
-              subCategory.name,
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 11,
-                color: Colors.grey[800],
-                fontWeight: FontWeight.bold,
-              ),
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
             ),
           ),
-        ],
-      ),
+        ),
+        const SizedBox(height: 8),
+        // Subcategory Name - Completely outside the green box
+        Text(
+          subCategory.name,
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            fontSize: 11,
+            color: Colors.grey[800],
+            fontWeight: FontWeight.bold,
+          ),
+          maxLines: 2,
+          overflow: TextOverflow.ellipsis,
+        ),
+      ],
     );
   }
 
