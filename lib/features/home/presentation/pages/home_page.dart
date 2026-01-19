@@ -403,7 +403,7 @@ class _HomeContentState extends State<HomeContent> {
       ..sort((a, b) => a.displayOrder.compareTo(b.displayOrder));
 
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
+      padding: const EdgeInsets.symmetric(horizontal: 8),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: sortedCategories.map((category) {
@@ -474,12 +474,36 @@ class _HomeContentState extends State<HomeContent> {
     final sortedSubCategories = List<SubCategoryModel>.from(subCategories)
       ..sort((a, b) => a.displayOrder.compareTo(b.displayOrder));
 
-    // If less than 5 items, always show in single line horizontal
-    if (sortedSubCategories.length < 5) {
+    final itemCount = sortedSubCategories.length;
+    
+    // Items that should NOT be horizontally scrollable: 3, 4, 7, or 8
+    final nonScrollableCounts = [3, 4, 7, 8];
+    
+    // If count is 3, 4, 7, or 8, show in grid (not scrollable)
+    if (nonScrollableCounts.contains(itemCount)) {
+      return GridView.builder(
+        shrinkWrap: true,
+        physics: const NeverScrollableScrollPhysics(),
+        padding: const EdgeInsets.symmetric(horizontal: 8),
+        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 4,
+          crossAxisSpacing: 8,
+          mainAxisSpacing: 12,
+          childAspectRatio: 0.85,
+        ),
+        itemCount: sortedSubCategories.length,
+        itemBuilder: (context, index) {
+          return _buildSubCategoryCard(sortedSubCategories[index]);
+        },
+      );
+    }
+    
+    // If less than 5 items (and not 3 or 4), show in single line horizontal
+    if (itemCount < 5) {
       return _buildSingleLineHorizontal(sortedSubCategories);
     }
 
-    // Determine number of rows based on layoutType (only if >= 5 items)
+    // Determine number of rows based on layoutType (for >= 5 items)
     int rows = 2; // Default to TWO_ROW
     switch (layoutType) {
       case LayoutType.singleRow:
@@ -497,18 +521,17 @@ class _HomeContentState extends State<HomeContent> {
     }
 
     const itemsPerRow = 4;
-    const spacing = 12.0;
 
     // Always show fixed grid without horizontal scrolling
     // Items will be displayed in the specified number of rows
     return GridView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
-      padding: const EdgeInsets.symmetric(horizontal: 16),
+      padding: const EdgeInsets.symmetric(horizontal: 8),
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: itemsPerRow,
-        crossAxisSpacing: spacing,
-        mainAxisSpacing: spacing,
+        crossAxisSpacing: 8,
+        mainAxisSpacing: 12,
         childAspectRatio: 0.85,
       ),
       itemCount: sortedSubCategories.length,
@@ -519,9 +542,9 @@ class _HomeContentState extends State<HomeContent> {
   }
 
   Widget _buildSingleLineHorizontal(List<SubCategoryModel> subCategories) {
-    const spacing = 12.0;
+    const spacing = 8.0;
     final screenWidth = MediaQuery.of(context).size.width;
-    const padding = 32.0; // 16 on each side
+    const padding = 16.0; // 8 on each side
     final itemWidth = ((screenWidth - padding - (3 * spacing)) / 4);
     final itemHeight = itemWidth / 0.85;
     final totalWidth = (subCategories.length * itemWidth) + 
@@ -532,7 +555,7 @@ class _HomeContentState extends State<HomeContent> {
       height: itemHeight,
       child: SingleChildScrollView(
         scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(horizontal: 16),
+        padding: const EdgeInsets.symmetric(horizontal: 8),
         child: SizedBox(
           width: totalWidth,
           child: Row(
@@ -572,8 +595,8 @@ class _HomeContentState extends State<HomeContent> {
         children: [
           // Image or Icon
           Container(
-            width: 50,
-            height: 50,
+            width: 65,
+            height: 65,
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.circular(8),
@@ -584,8 +607,12 @@ class _HomeContentState extends State<HomeContent> {
                     child: CachedNetworkImage(
                       imageUrl: imageUrl,
                       fit: BoxFit.cover,
+                      width: 65,
+                      height: 65,
                       placeholder: (context, url) => Container(
                         color: Colors.grey[200],
+                        width: 65,
+                        height: 65,
                         child: const Center(
                           child: CircularProgressIndicator(strokeWidth: 2),
                         ),
@@ -593,14 +620,14 @@ class _HomeContentState extends State<HomeContent> {
                       errorWidget: (context, url, error) => Icon(
                         Icons.image_not_supported,
                         color: Colors.grey[400],
-                        size: 28,
+                        size: 36,
                       ),
                     ),
                   )
                 : Icon(
                     Icons.category,
                     color: Colors.green[700],
-                    size: 28,
+                    size: 36,
                   ),
           ),
           const SizedBox(height: 8),
@@ -696,7 +723,7 @@ class _HomeContentState extends State<HomeContent> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
           child: Text(
             title,
             style: const TextStyle(
@@ -708,10 +735,10 @@ class _HomeContentState extends State<HomeContent> {
         GridView.builder(
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
-          padding: const EdgeInsets.symmetric(horizontal: 16),
+          padding: const EdgeInsets.symmetric(horizontal: 8),
           gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
             crossAxisCount: 4,
-            crossAxisSpacing: 12,
+            crossAxisSpacing: 8,
             mainAxisSpacing: 12,
             childAspectRatio: 0.85,
           ),
@@ -736,8 +763,8 @@ class _HomeContentState extends State<HomeContent> {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Container(
-            width: 50,
-            height: 50,
+            width: 65,
+            height: 65,
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.circular(8),
@@ -745,7 +772,7 @@ class _HomeContentState extends State<HomeContent> {
             child: Icon(
               category.icon,
               color: Colors.green[700],
-              size: 28,
+              size: 36,
             ),
           ),
           const SizedBox(height: 8),
