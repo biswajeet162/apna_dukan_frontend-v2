@@ -28,3 +28,4 @@ class AppSizes {
   static const double fontSizeXXL = 24.0;
 }
 
+

@@ -14,3 +14,4 @@ class AppStrings {
   static const String noData = 'No data available';
 }
 
+

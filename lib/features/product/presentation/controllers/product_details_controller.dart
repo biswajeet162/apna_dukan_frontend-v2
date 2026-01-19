@@ -48,3 +48,4 @@ class ProductDetailsController extends ChangeNotifier {
   }
 }
 
+
