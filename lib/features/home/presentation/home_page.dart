@@ -465,19 +465,39 @@ class _HomeContentState extends State<HomeContent> {
 
     const itemsPerRow = 4;
     const spacing = 12.0;
-    final screenWidth = MediaQuery.of(context).size.width;
-    final padding = 32.0; // 16 on each side
-    final itemWidth = ((screenWidth - padding - (3 * spacing)) / 4);
-    final itemHeight = itemWidth / 0.85; // Based on aspect ratio
-    final totalHeight = (rows * itemHeight) + ((rows - 1) * spacing);
 
-    // Calculate total columns needed for all items
-    // Items flow row-wise: Row 0 has items 0, 1, 2, 3... Row 1 has items (totalColumns), (totalColumns+1)...
-    // For TWO_ROW with 20 items: Row 0 has items 0-9 (10 items), Row 1 has items 10-19 (10 items)
+    // Calculate items that fit in visible area (rows * itemsPerRow)
+    final itemsInVisibleArea = rows * itemsPerRow;
+    
+    // If all items fit in visible area, show fixed grid without scrolling
+    if (sortedSubCategories.length <= itemsInVisibleArea) {
+      return GridView.builder(
+        shrinkWrap: true,
+        physics: const NeverScrollableScrollPhysics(),
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: itemsPerRow,
+          crossAxisSpacing: spacing,
+          mainAxisSpacing: spacing,
+          childAspectRatio: 0.85,
+        ),
+        itemCount: sortedSubCategories.length,
+        itemBuilder: (context, index) {
+          return _buildSubCategoryCard(sortedSubCategories[index]);
+        },
+      );
+    }
+
+    // If more items than visible area, use horizontal scroll
+    final screenWidth = MediaQuery.of(context).size.width;
+    const padding = 32.0; // 16 on each side
+    final itemWidth = ((screenWidth - padding - (3 * spacing)) / 4);
+    final itemHeight = itemWidth / 0.85;
+    final totalHeight = (rows * itemHeight) + ((rows - 1) * spacing);
     final totalColumns = (sortedSubCategories.length / rows).ceil();
     final totalWidth = (totalColumns * itemWidth) + ((totalColumns - 1) * spacing) + padding;
 
-    // If horizontal scroll, show all items in specified number of rows
+    // Horizontal scroll for items beyond visible area
     if (scrollType == ScrollType.horizontal) {
       return SizedBox(
         height: totalHeight,
@@ -490,9 +510,6 @@ class _HomeContentState extends State<HomeContent> {
               children: List.generate(rows, (rowIndex) {
                 return Row(
                   children: List.generate(totalColumns, (colIndex) {
-                    // Calculate item index: row-wise distribution
-                    // Row 0: items 0, 1, 2, 3... (totalColumns items)
-                    // Row 1: items totalColumns, totalColumns+1, totalColumns+2... (totalColumns items)
                     final itemIndex = rowIndex * totalColumns + colIndex;
                     if (itemIndex >= sortedSubCategories.length) {
                       return SizedBox(width: itemWidth, height: itemHeight);
@@ -517,23 +534,20 @@ class _HomeContentState extends State<HomeContent> {
       );
     } else {
       // Vertical scroll - show all items in grid with specified rows
-      return SizedBox(
-        height: totalHeight,
-        child: GridView.builder(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: itemsPerRow,
-            crossAxisSpacing: spacing,
-            mainAxisSpacing: spacing,
-            childAspectRatio: 0.85,
-          ),
-          itemCount: sortedSubCategories.length,
-          itemBuilder: (context, index) {
-            return _buildSubCategoryCard(sortedSubCategories[index]);
-          },
+      return GridView.builder(
+        shrinkWrap: true,
+        physics: const NeverScrollableScrollPhysics(),
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: itemsPerRow,
+          crossAxisSpacing: spacing,
+          mainAxisSpacing: spacing,
+          childAspectRatio: 0.85,
         ),
+        itemCount: sortedSubCategories.length,
+        itemBuilder: (context, index) {
+          return _buildSubCategoryCard(sortedSubCategories[index]);
+        },
       );
     }
   }

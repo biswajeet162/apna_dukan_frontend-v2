@@ -5,3 +5,4 @@ abstract class CatalogLayoutRepositoryInterface {
   Future<List<CatalogSection>> getEnabledCatalogSections();
 }
 
+

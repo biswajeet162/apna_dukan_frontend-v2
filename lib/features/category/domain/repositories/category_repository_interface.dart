@@ -5,3 +5,4 @@ abstract class CategoryRepositoryInterface {
   Future<CategorySectionResponse> getCategoriesForSection(String sectionId);
 }
 
+
