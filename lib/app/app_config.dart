@@ -23,7 +23,7 @@ class AppConfig {
       case Environment.local:
         return 'http://localhost:8080';
       case Environment.prod:
-        return 'https://apna-dukan-backend-v2.onrender.com';
+        return 'https://apna-dukan-backend-v2-v6w4.onrender.com';
     }
   }
 

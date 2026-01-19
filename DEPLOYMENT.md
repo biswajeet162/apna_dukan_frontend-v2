@@ -4,7 +4,7 @@
 
 The app supports two environments:
 - **Local**: Uses `http://localhost:8080` for backend API calls
-- **Production**: Uses `https://apna-dukan-backend-v2.onrender.com` for backend API calls
+- **Production**: Uses `https://apna-dukan-backend-v2-v6w4.onrender.com` for backend API calls
 
 ## Building for Different Environments
 
@@ -79,7 +79,7 @@ The environment is set at build time and cannot be changed at runtime for securi
 ## Backend URLs
 
 - **Local**: `http://localhost:8080/api`
-- **Production**: `https://apna-dukan-backend-v2.onrender.com/api`
+- **Production**: `https://apna-dukan-backend-v2-v6w4.onrender.com/api`
 
 ## Render.com Deployment
 
@@ -114,7 +114,7 @@ After deployment, verify the environment is correct:
 2. Open Developer Tools (F12) → Console tab
 3. Look for the bootstrap logs:
    - Should show: `Running in prod environment`
-   - Should show: `API Base URL: https://apna-dukan-backend-v2.onrender.com/api`
+   - Should show: `API Base URL: https://apna-dukan-backend-v2-v6w4.onrender.com/api`
 
 If you see `local` environment or `http://localhost:8080`, the build didn't use the production environment flag.
 
