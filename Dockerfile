@@ -9,8 +9,13 @@ RUN flutter pub get --no-analytics
 
 # Copy the rest of the code and build
 COPY . .
+
+# Build argument for environment (defaults to prod for production deployments)
+ARG ENV=prod
+ENV ENV=$ENV
+
 RUN flutter config --no-analytics
-RUN flutter build web --release
+RUN flutter build web --release --dart-define=ENV=$ENV
 
 # Run stage
 FROM nginx:alpine

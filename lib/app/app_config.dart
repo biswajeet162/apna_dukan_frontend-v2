@@ -5,12 +5,17 @@ enum Environment {
 }
 
 class AppConfig {
-  static Environment _currentEnvironment = Environment.local;
+  // Get environment from compile-time constant or default to local
+  static Environment get _currentEnvironment {
+    const env = String.fromEnvironment('ENV', defaultValue: 'local');
+    return env == 'prod' ? Environment.prod : Environment.local;
+  }
 
   static Environment get currentEnvironment => _currentEnvironment;
 
   static void setEnvironment(Environment env) {
-    _currentEnvironment = env;
+    // Note: This is kept for backward compatibility but compile-time constant takes precedence
+    // To change environment, use --dart-define=ENV=prod when building
   }
 
   static String get baseUrl {
@@ -18,7 +23,7 @@ class AppConfig {
       case Environment.local:
         return 'http://localhost:8080';
       case Environment.prod:
-        return 'https://api.apnadukan.com'; // TODO: Configure prod URL later
+        return 'https://apna-dukan-backend-v2.onrender.com';
     }
   }
 

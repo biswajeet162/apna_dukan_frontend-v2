@@ -6,7 +6,10 @@ void bootstrap() {
   // Initialize service locator
   ServiceLocator().init();
   
-  // Set environment (default to local, can be changed later)
-  AppConfig.setEnvironment(Environment.local);
+  // Environment is automatically detected from compile-time constants
+  // Use --dart-define=ENV=prod for production builds
+  // Use --dart-define=ENV=local (or omit) for local builds
+  print('Running in ${AppConfig.currentEnvironment.name} environment');
+  print('API Base URL: ${AppConfig.apiBaseUrl}');
 }
 
