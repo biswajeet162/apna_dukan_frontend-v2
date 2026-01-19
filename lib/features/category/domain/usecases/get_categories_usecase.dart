@@ -1,5 +1,5 @@
 // Get Categories Use Case
-import '../models/category_section_response.dart';
+import '../../data/models/category_section_response.dart';
 import '../repositories/category_repository_interface.dart';
 
 class GetCategoriesUseCase {

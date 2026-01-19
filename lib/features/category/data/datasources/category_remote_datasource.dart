@@ -1,6 +1,6 @@
 // Category Remote Data Source
 import 'package:dio/dio.dart';
-import '../../domain/models/category_section_response.dart';
+import '../models/category_section_response.dart';
 import '../../../../core/network/dio_client.dart';
 
 class CategoryRemoteDataSource {

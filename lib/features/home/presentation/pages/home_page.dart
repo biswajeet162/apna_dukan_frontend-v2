@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import '../../search/presentation/search_bar_widget.dart';
-import '../../../core/widgets/app_navbar.dart';
-import '../../../core/routes/app_routes.dart';
-import '../../../di/service_locator.dart';
-import '../../catalog_layout/domain/models/catalog_section.dart';
-import '../../category/domain/models/category_section_response.dart';
-import '../../category/domain/models/category.dart';
-import '../../subcategory/domain/models/subcategory_response.dart';
-import '../../subcategory/domain/models/subcategory.dart';
+import '../../../search/presentation/search_bar_widget.dart';
+import '../../../../core/widgets/app_navbar.dart';
+import '../../../../app/routes.dart';
+import '../../../../di/service_locator.dart';
+import '../../../catalog_layout/domain/models/catalog_section.dart';
+import '../../../category/data/models/category_section_response.dart';
+import '../../../category/data/models/category_model.dart';
+import '../../../subcategory/data/models/subcategory_response.dart';
+import '../../../subcategory/data/models/subcategory_model.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -399,7 +399,7 @@ class _HomeContentState extends State<HomeContent> {
     }
 
     // Display category titles with their subcategories, sorted by displayOrder
-    final sortedCategories = List<Category>.from(_categorySectionResponse!.categories)
+    final sortedCategories = List<CategoryModel>.from(_categorySectionResponse!.categories)
       ..sort((a, b) => a.displayOrder.compareTo(b.displayOrder));
 
     return Padding(
@@ -413,7 +413,7 @@ class _HomeContentState extends State<HomeContent> {
     );
   }
 
-  Widget _buildCategoryWithSubcategories(Category category, CatalogSection? catalogSection) {
+  Widget _buildCategoryWithSubcategories(CategoryModel category, CatalogSection? catalogSection) {
     final subCategoryResponse = _subCategoriesMap[category.categoryId];
     final isLoadingSubCategories = _loadingSubCategories[category.categoryId] ?? false;
 
@@ -466,12 +466,12 @@ class _HomeContentState extends State<HomeContent> {
   }
 
   Widget _buildSubCategoriesGrid(
-    List<SubCategory> subCategories,
+    List<SubCategoryModel> subCategories,
     LayoutType layoutType,
     ScrollType scrollType,
   ) {
     // Sort by displayOrder
-    final sortedSubCategories = List<SubCategory>.from(subCategories)
+    final sortedSubCategories = List<SubCategoryModel>.from(subCategories)
       ..sort((a, b) => a.displayOrder.compareTo(b.displayOrder));
 
     // If less than 5 items, always show in single line horizontal
@@ -518,7 +518,7 @@ class _HomeContentState extends State<HomeContent> {
     );
   }
 
-  Widget _buildSingleLineHorizontal(List<SubCategory> subCategories) {
+  Widget _buildSingleLineHorizontal(List<SubCategoryModel> subCategories) {
     const spacing = 12.0;
     final screenWidth = MediaQuery.of(context).size.width;
     const padding = 32.0; // 16 on each side
@@ -556,7 +556,7 @@ class _HomeContentState extends State<HomeContent> {
     );
   }
 
-  Widget _buildSubCategoryCard(SubCategory subCategory) {
+  Widget _buildSubCategoryCard(SubCategoryModel subCategory) {
     final imageUrl = subCategory.imageUrl.isNotEmpty
         ? subCategory.imageUrl.first
         : null;
@@ -625,7 +625,7 @@ class _HomeContentState extends State<HomeContent> {
   }
 
 
-  Widget _buildCategoryListItem(Category category) {
+  Widget _buildCategoryListItem(CategoryModel category) {
     return Container(
       margin: const EdgeInsets.only(bottom: 8),
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),

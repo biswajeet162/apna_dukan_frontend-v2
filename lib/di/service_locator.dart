@@ -10,6 +10,7 @@ import '../features/category/domain/usecases/get_categories_usecase.dart';
 import '../features/subcategory/data/datasources/subcategory_remote_datasource.dart';
 import '../features/subcategory/data/repositories/subcategory_repository.dart';
 import '../features/subcategory/domain/usecases/get_subcategories_usecase.dart';
+import '../features/home/data/repositories/home_repository.dart';
 
 class ServiceLocator {
   static final ServiceLocator _instance = ServiceLocator._internal();
@@ -29,6 +30,7 @@ class ServiceLocator {
   late final CatalogLayoutRepository _catalogLayoutRepository;
   late final CategoryRepository _categoryRepository;
   late final SubCategoryRepository _subCategoryRepository;
+  late final HomeRepository _homeRepository;
 
   // Use Cases
   late final GetCatalogLayoutUseCase _getCatalogLayoutUseCase;
@@ -49,6 +51,7 @@ class ServiceLocator {
     _catalogLayoutRepository = CatalogLayoutRepository(_catalogLayoutRemoteDataSource);
     _categoryRepository = CategoryRepository(_categoryRemoteDataSource);
     _subCategoryRepository = SubCategoryRepository(_subCategoryRemoteDataSource);
+    _homeRepository = HomeRepository(_catalogLayoutRepository);
 
     // Initialize use cases
     _getCatalogLayoutUseCase = GetCatalogLayoutUseCase(_catalogLayoutRepository);
@@ -62,4 +65,7 @@ class ServiceLocator {
   GetCatalogLayoutUseCase get getCatalogLayoutUseCase => _getCatalogLayoutUseCase;
   GetCategoriesUseCase get getCategoriesUseCase => _getCategoriesUseCase;
   GetSubCategoriesUseCase get getSubCategoriesUseCase => _getSubCategoriesUseCase;
+  HomeRepository get homeRepository => _homeRepository;
+  CategoryRepository get categoryRepository => _categoryRepository;
+  SubCategoryRepository get subCategoryRepository => _subCategoryRepository;
 }

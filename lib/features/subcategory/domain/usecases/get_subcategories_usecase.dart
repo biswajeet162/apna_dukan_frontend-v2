@@ -1,5 +1,5 @@
 // Get SubCategories Use Case
-import '../models/subcategory_response.dart';
+import '../../data/models/subcategory_response.dart';
 import '../repositories/subcategory_repository_interface.dart';
 
 class GetSubCategoriesUseCase {

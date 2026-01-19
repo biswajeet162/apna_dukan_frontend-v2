@@ -1,6 +1,6 @@
 // SubCategory Remote Data Source
 import 'package:dio/dio.dart';
-import '../../domain/models/subcategory_response.dart';
+import '../models/subcategory_response.dart';
 import '../../../../core/network/dio_client.dart';
 
 class SubCategoryRemoteDataSource {

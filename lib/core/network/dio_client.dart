@@ -1,6 +1,6 @@
 // Dio HTTP client
 import 'package:dio/dio.dart';
-import '../config/env_config.dart';
+import '../../app/app_config.dart';
 import 'interceptors.dart';
 
 class DioClient {
@@ -9,7 +9,7 @@ class DioClient {
   DioClient() {
     _dio = Dio(
       BaseOptions(
-        baseUrl: EnvConfig.apiBaseUrl,
+        baseUrl: AppConfig.apiBaseUrl,
         connectTimeout: const Duration(seconds: 30),
         receiveTimeout: const Duration(seconds: 30),
         headers: {
