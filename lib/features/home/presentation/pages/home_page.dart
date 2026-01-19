@@ -489,7 +489,7 @@ class _HomeContentState extends State<HomeContent> {
           crossAxisCount: 4,
           crossAxisSpacing: 8,
           mainAxisSpacing: 12,
-          childAspectRatio: 0.70,
+          childAspectRatio: 0.58,
         ),
         itemCount: sortedSubCategories.length,
         itemBuilder: (context, index) {
@@ -532,7 +532,7 @@ class _HomeContentState extends State<HomeContent> {
         crossAxisCount: itemsPerRow,
         crossAxisSpacing: 8,
         mainAxisSpacing: 12,
-        childAspectRatio: 0.70,
+        childAspectRatio: 0.58,
       ),
       itemCount: sortedSubCategories.length,
       itemBuilder: (context, index) {
@@ -599,7 +599,7 @@ class _HomeContentState extends State<HomeContent> {
             border: Border.all(color: Colors.green[200]!),
           ),
           child: Padding(
-            padding: const EdgeInsets.all(8.0),
+            padding: const EdgeInsets.all(4.0),
             child: Container(
               width: double.infinity,
               height: double.infinity,
@@ -622,31 +622,34 @@ class _HomeContentState extends State<HomeContent> {
                         errorWidget: (context, url, error) => Icon(
                           Icons.image_not_supported,
                           color: Colors.grey[400],
-                          size: 48,
+                          size: 52,
                         ),
                       ),
                     )
                   : Icon(
                       Icons.category,
                       color: Colors.green[700],
-                      size: 48,
+                      size: 52,
                     ),
             ),
           ),
         ),
         const SizedBox(height: 6),
         // Subcategory Name - Completely outside the green box
-        Flexible(
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 2),
           child: Text(
             subCategory.name,
             textAlign: TextAlign.center,
             style: TextStyle(
-              fontSize: 11,
+              fontSize: 13,
               color: Colors.grey[800],
               fontWeight: FontWeight.bold,
+              height: 1.2,
             ),
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
+            softWrap: true,
           ),
         ),
       ],
