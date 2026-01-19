@@ -1,0 +1,14 @@
+services:
+  - type: web
+    name: apna-dukan-frontend
+    env: docker
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    buildCommand: ""
+    startCommand: ""
+    envVars:
+      - key: ENV
+        value: prod
+    buildArgs:
+      - ENV=prod
+

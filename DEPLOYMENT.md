@@ -81,3 +81,55 @@ The environment is set at build time and cannot be changed at runtime for securi
 - **Local**: `http://localhost:8080/api`
 - **Production**: `https://apna-dukan-backend-v2.onrender.com/api`
 
+## Render.com Deployment
+
+### Automatic Deployment with render.yaml
+
+The project includes a `render.yaml` file that configures the build with the production environment automatically.
+
+1. Connect your repository to Render
+2. Render will automatically detect the `render.yaml` file
+3. The build will use `ENV=prod` automatically
+
+### Manual Render Configuration
+
+If not using `render.yaml`, configure Render manually:
+
+1. **Service Type**: Web Service
+2. **Environment**: Docker
+3. **Dockerfile Path**: `./Dockerfile`
+4. **Docker Context**: `.`
+5. **Build Command**: (leave empty, handled by Dockerfile)
+6. **Start Command**: (leave empty, handled by Dockerfile)
+7. **Environment Variables**:
+   - `ENV` = `prod`
+8. **Build Arguments**:
+   - `ENV` = `prod`
+
+### Verifying Production Environment
+
+After deployment, verify the environment is correct:
+
+1. Open the deployed app in a browser
+2. Open Developer Tools (F12) → Console tab
+3. Look for the bootstrap logs:
+   - Should show: `Running in prod environment`
+   - Should show: `API Base URL: https://apna-dukan-backend-v2.onrender.com/api`
+
+If you see `local` environment or `http://localhost:8080`, the build didn't use the production environment flag.
+
+## Troubleshooting
+
+### App is using localhost backend in production
+
+**Solution**: Ensure the Docker build uses `--build-arg ENV=prod`:
+```bash
+docker build --build-arg ENV=prod -t apna-dukan-frontend:prod .
+```
+
+Or in Render, ensure the environment variable `ENV=prod` is set.
+
+### Favicon 404 errors
+
+The nginx configuration now redirects `/favicon.ico` to `/favicon.png` automatically. This should resolve 404 errors for favicon requests.
+

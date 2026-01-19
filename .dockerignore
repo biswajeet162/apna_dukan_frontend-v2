@@ -23,6 +23,7 @@ Thumbs.db
 # Documentation
 README.md
 *.md
+DEPLOYMENT.md
 
 # Test files
 test/
@@ -38,3 +39,6 @@ windows/
 # Logs
 *.log
 
+# Scripts (not needed in Docker)
+*.sh
+*.bat
