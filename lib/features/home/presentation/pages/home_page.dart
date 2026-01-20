@@ -599,7 +599,6 @@ class _HomeContentState extends State<HomeContent> {
           decoration: BoxDecoration(
             color: Colors.green[50],
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: Colors.green[200]!),
           ),
           child: Padding(
             padding: const EdgeInsets.all(4.0),
