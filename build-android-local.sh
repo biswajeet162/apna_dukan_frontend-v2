@@ -7,3 +7,4 @@ echo "WARNING: This is for local testing only!"
 flutter build apk --release --dart-define=ENV=local
 echo "Build complete! APK location: build/app/outputs/flutter-apk/app-release.apk"
 
+
