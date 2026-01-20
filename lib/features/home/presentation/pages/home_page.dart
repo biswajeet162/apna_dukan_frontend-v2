@@ -438,7 +438,7 @@ class _HomeContentState extends State<HomeContent> {
               ),
             ),
           ),
-          const SizedBox(height: 18),
+          const SizedBox(height: 8),
           // Subcategories Grid
           if (isLoadingSubCategories)
             const Padding(

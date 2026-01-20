@@ -7,23 +7,28 @@ enum Environment {
 }
 
 class AppConfig {
-  // Get environment from compile-time constant or default based on build mode
-  // Debug mode defaults to local, Release mode defaults to prod
+  // Get environment from compile-time constant or sensible defaults
+  // Priority:
+  // 1. Explicit --dart-define=ENV=local/prod
+  // 2. If running on Web:
+  //    - Debug (flutter run -d chrome)  → local (localhost:8080)
+  //    - Release (flutter build web)    → prod
+  // 3. If running on mobile/desktop (non‑web):
+  //    - Always prod (even for flutter run -d <device>)
   static Environment get _currentEnvironment {
     const env = String.fromEnvironment('ENV', defaultValue: '');
-    
+
     // If explicitly set via --dart-define, use that
     if (env == 'local') return Environment.local;
     if (env == 'prod') return Environment.prod;
-    
-    // Otherwise, default based on build mode
-    // Debug mode (flutter run) → local
-    // Release mode (flutter build) → prod
-    if (kDebugMode) {
-      return Environment.local;
-    } else {
-      return Environment.prod;
+
+    // Web: local in debug, prod in release
+    if (kIsWeb) {
+      return kDebugMode ? Environment.local : Environment.prod;
     }
+
+    // Non‑web (mobile / desktop): always talk to PROD backend by default
+    return Environment.prod;
   }
 
   static Environment get currentEnvironment => _currentEnvironment;
