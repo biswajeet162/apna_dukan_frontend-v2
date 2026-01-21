@@ -59,8 +59,14 @@ final GoRouter appRouter = GoRouter(
           path: 'categories',
           builder: (context, state) {
             final subCategoryId = state.uri.queryParameters['subCategoryId'];
-            final subCategoryName = state.uri.queryParameters['subCategoryName'];
+            final subCategoryNameEncoded = state.uri.queryParameters['subCategoryName'];
+            // Decode the subCategoryName (handles +, &, etc.)
+            final subCategoryName = subCategoryNameEncoded != null 
+                ? Uri.decodeComponent(subCategoryNameEncoded) 
+                : null;
+            // Use a key based on subCategoryId to force rebuild when it changes
             return HomePage(
+              key: ValueKey('home_categories_${subCategoryId ?? 'empty'}'),
               initialTab: 1,
               initialSubCategoryId: subCategoryId,
               initialSubCategoryName: subCategoryName,

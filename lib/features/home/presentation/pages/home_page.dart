@@ -44,13 +44,18 @@ class _HomePageState extends State<HomePage> {
   @override
   void didUpdateWidget(HomePage oldWidget) {
     super.didUpdateWidget(oldWidget);
-    // Update tab when route changes
+    // Update tab when route changes (for deep linking)
     if (widget.initialTab != oldWidget.initialTab) {
-      _currentIndex = widget.initialTab ?? 0;
+      setState(() {
+        _currentIndex = widget.initialTab ?? 0;
+      });
     }
-    if (widget.initialSubCategoryId != oldWidget.initialSubCategoryId) {
-      _selectedSubCategoryId = widget.initialSubCategoryId;
-      _selectedSubCategoryName = widget.initialSubCategoryName;
+    if (widget.initialSubCategoryId != oldWidget.initialSubCategoryId ||
+        widget.initialSubCategoryName != oldWidget.initialSubCategoryName) {
+      setState(() {
+        _selectedSubCategoryId = widget.initialSubCategoryId;
+        _selectedSubCategoryName = widget.initialSubCategoryName;
+      });
     }
   }
 
@@ -63,10 +68,18 @@ class _HomePageState extends State<HomePage> {
           _currentIndex = 1; // Navigate to Categories tab
         });
         // Update URL when navigating to categories tab
-        context.go('${AppRoutes.home}/categories?subCategoryId=$subCategoryId&subCategoryName=${Uri.encodeComponent(subCategoryName)}');
+        final uri = Uri(
+          path: '${AppRoutes.home}/categories',
+          queryParameters: {
+            'subCategoryId': subCategoryId,
+            'subCategoryName': subCategoryName,
+          },
+        );
+        context.go(uri.toString());
       },
     ),
     CategoriesPage(
+      key: ValueKey('categories_${_selectedSubCategoryId ?? 'empty'}'), // Force rebuild when subCategoryId changes
       subCategoryId: _selectedSubCategoryId,
       subCategoryName: _selectedSubCategoryName,
     ),
@@ -84,10 +97,18 @@ class _HomePageState extends State<HomePage> {
         context.go(AppRoutes.home);
         break;
       case 1:
-        final queryParams = _selectedSubCategoryId != null && _selectedSubCategoryName != null
-            ? '?subCategoryId=$_selectedSubCategoryId&subCategoryName=${Uri.encodeComponent(_selectedSubCategoryName!)}'
-            : '';
-        context.go('${AppRoutes.home}/categories$queryParams');
+        if (_selectedSubCategoryId != null && _selectedSubCategoryName != null) {
+          final uri = Uri(
+            path: '${AppRoutes.home}/categories',
+            queryParameters: {
+              'subCategoryId': _selectedSubCategoryId!,
+              'subCategoryName': _selectedSubCategoryName!,
+            },
+          );
+          context.go(uri.toString());
+        } else {
+          context.go('${AppRoutes.home}/categories');
+        }
         break;
       case 2:
         context.go('${AppRoutes.home}/orders');
@@ -967,8 +988,15 @@ class CategoriesPage extends StatefulWidget {
 
 class _CategoriesPageState extends State<CategoriesPage> {
   @override
+  void didUpdateWidget(CategoriesPage oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // If subCategoryId changes, the ProductGroupsPage will be rebuilt with new props
+    // This ensures deep linking works correctly
+  }
+
+  @override
   Widget build(BuildContext context) {
-    if (widget.subCategoryId == null) {
+    if (widget.subCategoryId == null || widget.subCategoryId!.isEmpty) {
       return Scaffold(
         appBar: AppBar(
           title: const Text('Categories'),
@@ -985,6 +1013,7 @@ class _CategoriesPageState extends State<CategoriesPage> {
     }
 
     return ProductGroupsPage(
+      key: ValueKey(widget.subCategoryId), // Force rebuild when subCategoryId changes
       subCategoryId: widget.subCategoryId!,
       subCategoryName: widget.subCategoryName ?? 'Products',
     );
