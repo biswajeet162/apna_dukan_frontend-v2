@@ -52,7 +52,14 @@ final GoRouter appRouter = GoRouter(
     // Home route with nested routes for tabs
     GoRoute(
       path: AppRoutes.home,
-      builder: (context, state) => const HomePage(initialTab: 0),
+      builder: (context, state) {
+        // Use a key to force recreation when navigating to /home
+        // This ensures HomeContent reloads data (layout, categories, subcategories)
+        return HomePage(
+          key: const ValueKey('home_page_main'),
+          initialTab: 0,
+        );
+      },
       routes: [
         // Home tab (default)
         GoRoute(

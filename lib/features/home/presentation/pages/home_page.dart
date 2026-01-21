@@ -32,6 +32,7 @@ class _HomePageState extends State<HomePage> {
   late int _currentIndex;
   String? _selectedSubCategoryId;
   String? _selectedSubCategoryName;
+  int _homeContentKeyCounter = 0; // Counter to force HomeContent recreation
 
   @override
   void initState() {
@@ -48,6 +49,12 @@ class _HomePageState extends State<HomePage> {
     if (widget.initialTab != oldWidget.initialTab) {
       setState(() {
         _currentIndex = widget.initialTab ?? 0;
+        // When navigating to home tab (index 0), force reload
+        if (_currentIndex == 0) {
+          _selectedSubCategoryId = null;
+          _selectedSubCategoryName = null;
+          _homeContentKeyCounter++; // Force HomeContent recreation
+        }
       });
     }
     if (widget.initialSubCategoryId != oldWidget.initialSubCategoryId ||
@@ -61,6 +68,8 @@ class _HomePageState extends State<HomePage> {
 
   List<Widget> get _pages => [
     HomeContent(
+      key: ValueKey('home_content_$_homeContentKeyCounter'), // Key to force recreation
+      contentKey: ValueKey('home_content_$_homeContentKeyCounter'),
       onSubCategoryTap: (subCategoryId, subCategoryName) {
         setState(() {
           _selectedSubCategoryId = subCategoryId;
@@ -89,6 +98,14 @@ class _HomePageState extends State<HomePage> {
   void _onNavTap(int index) {
     setState(() {
       _currentIndex = index;
+      // Clear subcategory selection when navigating to home
+      if (index == 0) {
+        _selectedSubCategoryId = null;
+        _selectedSubCategoryName = null;
+        // Force HomeContent recreation by incrementing key counter
+        // This ensures initState is called and all 3 API calls are made
+        _homeContentKeyCounter++;
+      }
     });
     
     // Update URL based on tab selection
@@ -130,10 +147,12 @@ class _HomePageState extends State<HomePage> {
 
 class HomeContent extends StatefulWidget {
   final Function(String subCategoryId, String subCategoryName)? onSubCategoryTap;
+  final Key? contentKey; // Key to force recreation when needed
 
   const HomeContent({
     super.key,
     this.onSubCategoryTap,
+    this.contentKey,
   });
 
   @override
@@ -149,20 +168,55 @@ class _HomeContentState extends State<HomeContent> {
   bool _isLoadingCategories = false;
   String? _errorMessage;
   String? _categoryErrorMessage;
+  bool _hasLoadedData = false; // Track if data has been loaded to prevent duplicate calls
 
   @override
   void initState() {
     super.initState();
+    // ONLY make these 3 API calls when HomeContent is initialized
     _loadCatalogLayout();
   }
 
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Ensure data is loaded if widget is reused
+    if (!_hasLoadedData && !_isLoading) {
+      _loadCatalogLayout();
+    }
+  }
+
+  // Public method to reload data when navigating back to home
+  void reloadData() {
+    if (mounted) {
+      setState(() {
+        _hasLoadedData = false;
+        _catalogSections = [];
+        _categorySectionResponse = null;
+        _subCategoriesMap = {};
+        _loadingSubCategories = {};
+        _isLoading = true;
+        _isLoadingCategories = false;
+        _errorMessage = null;
+        _categoryErrorMessage = null;
+      });
+      _loadCatalogLayout();
+    }
+  }
+
   Future<void> _loadCatalogLayout() async {
+    // Prevent duplicate calls
+    if (_isLoading && _hasLoadedData) {
+      return;
+    }
+
     try {
       setState(() {
         _isLoading = true;
         _errorMessage = null;
       });
 
+      // API CALL #1: Load Catalog Layout
       final sections = await ServiceLocator().getCatalogLayoutUseCase();
       
       setState(() {
@@ -175,15 +229,20 @@ class _HomeContentState extends State<HomeContent> {
         final productCategorySection = sections.firstWhere(
           (section) => section.sectionCode == 'PRODUCT_CATEGORY',
         );
+        // API CALL #2: Load Categories (will trigger API CALL #3 for subcategories)
         _loadCategories(productCategorySection.sectionId);
       } catch (e) {
         // No PRODUCT_CATEGORY section found, skip loading categories
         print('No PRODUCT_CATEGORY section found: $e');
+        setState(() {
+          _hasLoadedData = true;
+        });
       }
     } catch (e) {
       setState(() {
         _errorMessage = e.toString();
         _isLoading = false;
+        _hasLoadedData = true;
       });
     }
   }
@@ -195,6 +254,7 @@ class _HomeContentState extends State<HomeContent> {
         _categoryErrorMessage = null;
       });
 
+      // API CALL #2: Load Categories
       final categoryResponse = await ServiceLocator().getCategoriesUseCase(sectionId);
       
       setState(() {
@@ -202,14 +262,20 @@ class _HomeContentState extends State<HomeContent> {
         _isLoadingCategories = false;
       });
 
-      // Load subcategories for each category one by one
+      // API CALL #3: Load Subcategories for ALL categories
+      // This is the ONLY place where subcategories are loaded
       for (var category in categoryResponse.categories) {
         _loadSubCategories(category.categoryId);
       }
+
+      setState(() {
+        _hasLoadedData = true;
+      });
     } catch (e) {
       setState(() {
         _categoryErrorMessage = e.toString();
         _isLoadingCategories = false;
+        _hasLoadedData = true;
       });
     }
   }

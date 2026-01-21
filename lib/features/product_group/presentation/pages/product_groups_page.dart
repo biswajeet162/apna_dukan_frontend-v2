@@ -160,7 +160,10 @@ class _ProductGroupsPageState extends State<ProductGroupsPage> {
         children: [
           IconButton(
             icon: const Icon(Icons.arrow_back, color: Colors.white),
-            onPressed: () => context.pop(),
+            onPressed: () {
+              // Navigate to home page which will reload layout, categories, and subcategories
+              context.go(AppRoutes.home);
+            },
           ),
           Expanded(
             child: Text(
