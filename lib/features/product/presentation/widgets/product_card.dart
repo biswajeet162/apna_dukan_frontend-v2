@@ -27,6 +27,20 @@ class ProductCard extends StatelessWidget {
                       imageUrl: product.primaryImageUrl!,
                       fit: BoxFit.cover,
                       width: double.infinity,
+                      placeholder: (context, url) => Container(
+                        color: Colors.grey[200],
+                        child: const Center(
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        ),
+                      ),
+                      errorWidget: (context, url, error) => Container(
+                        color: Colors.grey[200],
+                        child: const Icon(
+                          Icons.image_not_supported,
+                          color: Colors.grey,
+                          size: 50,
+                        ),
+                      ),
                     )
                   : const Icon(Icons.image, size: 100),
             ),

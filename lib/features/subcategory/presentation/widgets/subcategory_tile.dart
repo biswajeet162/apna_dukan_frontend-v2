@@ -20,6 +20,21 @@ class SubCategoryTile extends StatelessWidget {
               width: 50,
               height: 50,
               fit: BoxFit.cover,
+              placeholder: (context, url) => Container(
+                color: Colors.grey[200],
+                child: const Center(
+                  child: SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  ),
+                ),
+              ),
+              errorWidget: (context, url, error) => const Icon(
+                Icons.image_not_supported,
+                color: Colors.grey,
+                size: 30,
+              ),
             )
           : const Icon(Icons.category),
       title: Text(subcategory.name),
