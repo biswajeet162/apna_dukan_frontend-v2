@@ -126,45 +126,19 @@ class _ProductGroupsPageState extends State<ProductGroupsPage> {
             onPressed: () => Navigator.of(context).pop(),
           ),
           Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  widget.subCategoryName,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Row(
-                  children: [
-                    const Icon(Icons.location_on, color: Colors.white, size: 16),
-                    const SizedBox(width: 4),
-                    Text(
-                      'Delivering to Home: Biswa, Sub...',
-                      style: TextStyle(
-                        color: Colors.white.withOpacity(0.9),
-                        fontSize: 12,
-                      ),
-                    ),
-                    const Icon(Icons.arrow_drop_down, color: Colors.white, size: 16),
-                  ],
-                ),
-              ],
+            child: Text(
+              widget.subCategoryName,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+              ),
             ),
           ),
           IconButton(
             icon: const Icon(Icons.search, color: Colors.white),
             onPressed: () {
               // TODO: Navigate to search
-            },
-          ),
-          IconButton(
-            icon: const Icon(Icons.share, color: Colors.white),
-            onPressed: () {
-              // TODO: Share functionality
             },
           ),
         ],
