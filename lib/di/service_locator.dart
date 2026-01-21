@@ -10,6 +10,9 @@ import '../features/category/domain/usecases/get_categories_usecase.dart';
 import '../features/subcategory/data/datasources/subcategory_remote_datasource.dart';
 import '../features/subcategory/data/repositories/subcategory_repository.dart';
 import '../features/subcategory/domain/usecases/get_subcategories_usecase.dart';
+import '../features/product_group/data/datasources/product_group_remote_datasource.dart';
+import '../features/product_group/data/repositories/product_group_repository.dart';
+import '../features/product_group/domain/usecases/get_product_groups_usecase.dart';
 import '../features/home/data/repositories/home_repository.dart';
 
 class ServiceLocator {
@@ -25,17 +28,20 @@ class ServiceLocator {
   late final CatalogLayoutRemoteDataSource _catalogLayoutRemoteDataSource;
   late final CategoryRemoteDataSource _categoryRemoteDataSource;
   late final SubCategoryRemoteDataSource _subCategoryRemoteDataSource;
+  late final ProductGroupRemoteDataSource _productGroupRemoteDataSource;
 
   // Repositories
   late final CatalogLayoutRepository _catalogLayoutRepository;
   late final CategoryRepository _categoryRepository;
   late final SubCategoryRepository _subCategoryRepository;
+  late final ProductGroupRepository _productGroupRepository;
   late final HomeRepository _homeRepository;
 
   // Use Cases
   late final GetCatalogLayoutUseCase _getCatalogLayoutUseCase;
   late final GetCategoriesUseCase _getCategoriesUseCase;
   late final GetSubCategoriesUseCase _getSubCategoriesUseCase;
+  late final GetProductGroupsUseCase _getProductGroupsUseCase;
 
   void init() {
     // Initialize core services
@@ -46,17 +52,20 @@ class ServiceLocator {
     _catalogLayoutRemoteDataSource = CatalogLayoutRemoteDataSource(_dioClient);
     _categoryRemoteDataSource = CategoryRemoteDataSource(_dioClient);
     _subCategoryRemoteDataSource = SubCategoryRemoteDataSource(_dioClient);
+    _productGroupRemoteDataSource = ProductGroupRemoteDataSource(_dioClient);
 
     // Initialize repositories
     _catalogLayoutRepository = CatalogLayoutRepository(_catalogLayoutRemoteDataSource);
     _categoryRepository = CategoryRepository(_categoryRemoteDataSource);
     _subCategoryRepository = SubCategoryRepository(_subCategoryRemoteDataSource);
+    _productGroupRepository = ProductGroupRepository(_productGroupRemoteDataSource);
     _homeRepository = HomeRepository(_catalogLayoutRepository);
 
     // Initialize use cases
     _getCatalogLayoutUseCase = GetCatalogLayoutUseCase(_catalogLayoutRepository);
     _getCategoriesUseCase = GetCategoriesUseCase(_categoryRepository);
     _getSubCategoriesUseCase = GetSubCategoriesUseCase(_subCategoryRepository);
+    _getProductGroupsUseCase = GetProductGroupsUseCase(_productGroupRepository);
   }
 
   // Getters
@@ -65,7 +74,9 @@ class ServiceLocator {
   GetCatalogLayoutUseCase get getCatalogLayoutUseCase => _getCatalogLayoutUseCase;
   GetCategoriesUseCase get getCategoriesUseCase => _getCategoriesUseCase;
   GetSubCategoriesUseCase get getSubCategoriesUseCase => _getSubCategoriesUseCase;
+  GetProductGroupsUseCase get getProductGroupsUseCase => _getProductGroupsUseCase;
   HomeRepository get homeRepository => _homeRepository;
   CategoryRepository get categoryRepository => _categoryRepository;
   SubCategoryRepository get subCategoryRepository => _subCategoryRepository;
+  ProductGroupRepository get productGroupRepository => _productGroupRepository;
 }

@@ -1,15 +1,16 @@
 // Product Group Repository
-import '../models/product_group_model.dart';
+import '../models/product_group_response.dart';
+import '../datasources/product_group_remote_datasource.dart';
+import '../../domain/repositories/product_group_repository_interface.dart';
 
-class ProductGroupRepository {
-  // TODO: Add remote data source
-  // final ProductGroupRemoteDataSource _remoteDataSource;
+class ProductGroupRepository implements ProductGroupRepositoryInterface {
+  final ProductGroupRemoteDataSource _remoteDataSource;
 
-  // ProductGroupRepository(this._remoteDataSource);
+  ProductGroupRepository(this._remoteDataSource);
 
-  Future<List<ProductGroupModel>> getProductGroupsForSubCategory(String subCategoryId) async {
-    // TODO: Implement API call
-    throw UnimplementedError('Not implemented yet');
+  @override
+  Future<ProductGroupResponse> getProductGroupsForSubCategory(String subCategoryId) async {
+    return await _remoteDataSource.getProductGroupsForSubCategory(subCategoryId);
   }
 }
 

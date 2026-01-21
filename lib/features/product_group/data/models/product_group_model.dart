@@ -7,6 +7,7 @@ class ProductGroupModel {
   final String code;
   final int displayOrder;
   final bool enabled;
+  final List<String> imageUrl;
 
   ProductGroupModel({
     required this.productGroupId,
@@ -16,6 +17,7 @@ class ProductGroupModel {
     required this.code,
     required this.displayOrder,
     required this.enabled,
+    required this.imageUrl,
   });
 
   factory ProductGroupModel.fromJson(Map<String, dynamic> json) {
@@ -27,6 +29,10 @@ class ProductGroupModel {
       code: json['code'] as String,
       displayOrder: json['displayOrder'] as int,
       enabled: json['enabled'] as bool,
+      imageUrl: (json['imageUrl'] as List<dynamic>?)
+              ?.map((item) => item as String)
+              .toList() ??
+          [],
     );
   }
 
@@ -39,6 +45,7 @@ class ProductGroupModel {
       'code': code,
       'displayOrder': displayOrder,
       'enabled': enabled,
+      'imageUrl': imageUrl,
     };
   }
 }

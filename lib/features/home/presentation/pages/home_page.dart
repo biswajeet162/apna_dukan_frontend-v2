@@ -9,6 +9,7 @@ import '../../../category/data/models/category_section_response.dart';
 import '../../../category/data/models/category_model.dart';
 import '../../../subcategory/data/models/subcategory_response.dart';
 import '../../../subcategory/data/models/subcategory_model.dart';
+import '../../../product_group/presentation/pages/product_groups_page.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -19,10 +20,23 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   int _currentIndex = 0;
+  String? _selectedSubCategoryId;
+  String? _selectedSubCategoryName;
 
-  final List<Widget> _pages = [
-    const HomeContent(),
-    const CategoriesPage(),
+  List<Widget> get _pages => [
+    HomeContent(
+      onSubCategoryTap: (subCategoryId, subCategoryName) {
+        setState(() {
+          _selectedSubCategoryId = subCategoryId;
+          _selectedSubCategoryName = subCategoryName;
+          _currentIndex = 1; // Navigate to Categories tab
+        });
+      },
+    ),
+    CategoriesPage(
+      subCategoryId: _selectedSubCategoryId,
+      subCategoryName: _selectedSubCategoryName,
+    ),
     const OrdersPage(),
   ];
 
@@ -45,7 +59,12 @@ class _HomePageState extends State<HomePage> {
 }
 
 class HomeContent extends StatefulWidget {
-  const HomeContent({super.key});
+  final Function(String subCategoryId, String subCategoryName)? onSubCategoryTap;
+
+  const HomeContent({
+    super.key,
+    this.onSubCategoryTap,
+  });
 
   @override
   State<HomeContent> createState() => _HomeContentState();
@@ -587,74 +606,79 @@ class _HomeContentState extends State<HomeContent> {
         ? subCategory.imageUrl.first
         : null;
 
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      mainAxisAlignment: MainAxisAlignment.start,
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: [
-        // Image Container with green background - ONLY contains the image
-        Container(
-          width: 90,
-          height: 90,
-          decoration: BoxDecoration(
-            color: Colors.green[50],
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: Padding(
-            padding: const EdgeInsets.all(4.0),
-            child: Container(
-              width: double.infinity,
-              height: double.infinity,
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: imageUrl != null
-                  ? ClipRRect(
-                      borderRadius: BorderRadius.circular(8),
-                      child: CachedNetworkImage(
-                        imageUrl: imageUrl,
-                        fit: BoxFit.cover,
-                        placeholder: (context, url) => Container(
-                          color: Colors.grey[200],
-                          child: const Center(
-                            child: CircularProgressIndicator(strokeWidth: 2),
+    return GestureDetector(
+      onTap: () {
+        widget.onSubCategoryTap?.call(subCategory.subCategoryId, subCategory.name);
+      },
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        mainAxisAlignment: MainAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          // Image Container with green background - ONLY contains the image
+          Container(
+            width: 90,
+            height: 90,
+            decoration: BoxDecoration(
+              color: Colors.green[50],
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(4.0),
+              child: Container(
+                width: double.infinity,
+                height: double.infinity,
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: imageUrl != null
+                    ? ClipRRect(
+                        borderRadius: BorderRadius.circular(8),
+                        child: CachedNetworkImage(
+                          imageUrl: imageUrl,
+                          fit: BoxFit.cover,
+                          placeholder: (context, url) => Container(
+                            color: Colors.grey[200],
+                            child: const Center(
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            ),
+                          ),
+                          errorWidget: (context, url, error) => Icon(
+                            Icons.image_not_supported,
+                            color: Colors.grey[400],
+                            size: 52,
                           ),
                         ),
-                        errorWidget: (context, url, error) => Icon(
-                          Icons.image_not_supported,
-                          color: Colors.grey[400],
-                          size: 52,
-                        ),
+                      )
+                    : Icon(
+                        Icons.category,
+                        color: Colors.green[700],
+                        size: 52,
                       ),
-                    )
-                  : Icon(
-                      Icons.category,
-                      color: Colors.green[700],
-                      size: 52,
-                    ),
+              ),
             ),
           ),
-        ),
-        const SizedBox(height: 6),
-        // Subcategory Name - Completely outside the green box
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 2),
-          child: Text(
-            subCategory.name,
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              fontSize: 13,
-              color: Colors.grey[800],
-              fontWeight: FontWeight.bold,
-              height: 1.2,
+          const SizedBox(height: 6),
+          // Subcategory Name - Completely outside the green box
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 2),
+            child: Text(
+              subCategory.name,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 13,
+                color: Colors.grey[800],
+                fontWeight: FontWeight.bold,
+                height: 1.2,
+              ),
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              softWrap: true,
             ),
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-            softWrap: true,
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 
@@ -878,23 +902,42 @@ class _StickySearchBarDelegate extends SliverPersistentHeaderDelegate {
   bool shouldRebuild(covariant SliverPersistentHeaderDelegate oldDelegate) => false;
 }
 
-class CategoriesPage extends StatelessWidget {
-  const CategoriesPage({super.key});
+class CategoriesPage extends StatefulWidget {
+  final String? subCategoryId;
+  final String? subCategoryName;
+
+  const CategoriesPage({
+    super.key,
+    this.subCategoryId,
+    this.subCategoryName,
+  });
 
   @override
+  State<CategoriesPage> createState() => _CategoriesPageState();
+}
+
+class _CategoriesPageState extends State<CategoriesPage> {
+  @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Categories'),
-        backgroundColor: Colors.green[700],
-        foregroundColor: Colors.white,
-      ),
-      body: const Center(
-        child: Text(
-          'Categories Page',
-          style: TextStyle(fontSize: 24),
+    if (widget.subCategoryId == null) {
+      return Scaffold(
+        appBar: AppBar(
+          title: const Text('Categories'),
+          backgroundColor: Colors.green[700],
+          foregroundColor: Colors.white,
         ),
-      ),
+        body: const Center(
+          child: Text(
+            'Select a category to view products',
+            style: TextStyle(fontSize: 16),
+          ),
+        ),
+      );
+    }
+
+    return ProductGroupsPage(
+      subCategoryId: widget.subCategoryId!,
+      subCategoryName: widget.subCategoryName ?? 'Products',
     );
   }
 }
