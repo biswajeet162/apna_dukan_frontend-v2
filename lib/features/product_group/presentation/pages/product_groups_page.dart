@@ -37,6 +37,9 @@ class _ProductGroupsPageState extends State<ProductGroupsPage> {
   @override
   void initState() {
     super.initState();
+    // When route is /home/categories?subCategoryId=xxx, ALWAYS make these 2 API calls:
+    // 1. Product Groups API (using subCategoryId)
+    // 2. Products API (using first product group ID - default selected)
     _loadProductGroups();
   }
 
@@ -47,6 +50,7 @@ class _ProductGroupsPageState extends State<ProductGroupsPage> {
         _errorMessage = null;
       });
 
+      // API CALL #1: Load Product Groups using subCategoryId
       final response = await ServiceLocator().getProductGroupsUseCase(widget.subCategoryId);
 
       setState(() {
@@ -54,7 +58,7 @@ class _ProductGroupsPageState extends State<ProductGroupsPage> {
         _isLoading = false;
       });
 
-      // Load products for the first product group by default
+      // API CALL #2: Load Products for the first product group (default selected)
       if (response.productGroups.isNotEmpty) {
         _selectedIndex = 0;
         _selectedProductGroupId = response.productGroups[0].productGroupId;

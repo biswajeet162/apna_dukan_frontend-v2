@@ -53,10 +53,11 @@ final GoRouter appRouter = GoRouter(
     GoRoute(
       path: AppRoutes.home,
       builder: (context, state) {
-        // Use a key to force recreation when navigating to /home
-        // This ensures HomeContent reloads data (layout, categories, subcategories)
+        // When route is /home, create new HomePage which creates new HomeContent
+        // HomeContent.initState() will make 3 API calls: Layout, Categories, Subcategories
+        // Router creates new widget instance on each navigation, so key ensures proper identity
         return HomePage(
-          key: const ValueKey('home_page_main'),
+          key: const ValueKey('home_page'),
           initialTab: 0,
         );
       },
@@ -71,10 +72,14 @@ final GoRouter appRouter = GoRouter(
             final subCategoryName = subCategoryNameEncoded != null 
                 ? Uri.decodeComponent(subCategoryNameEncoded) 
                 : null;
-            // Use a key based on subCategoryId to force rebuild when it changes
+            // CRITICAL: When loading /home/categories, create HomePage with initialTab: 1
+            // This ensures HomeContent is NEVER created, so NO Layout/Categories/Subcategories API calls
+            // Only ProductGroupsPage will be created, making ONLY 2 API calls:
+            // 1. Product Groups API
+            // 2. Products API (for first product group)
             return HomePage(
               key: ValueKey('home_categories_${subCategoryId ?? 'empty'}'),
-              initialTab: 1,
+              initialTab: 1, // This prevents HomeContent from being created
               initialSubCategoryId: subCategoryId,
               initialSubCategoryName: subCategoryName,
             );

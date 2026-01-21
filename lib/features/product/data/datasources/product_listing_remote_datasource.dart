@@ -1,6 +1,7 @@
 // Product Listing Remote Data Source
 import 'package:dio/dio.dart';
 import '../models/product_listing_response.dart';
+import '../models/product_details_model.dart';
 import '../../../../core/network/dio_client.dart';
 import '../../../../core/constants/api_endpoints.dart';
 
@@ -32,6 +33,23 @@ class ProductListingRemoteDataSource {
       }
     } on DioException catch (e) {
       throw Exception('Error fetching product listing: ${e.message}');
+    }
+  }
+
+  // API CALL: Product Details API (/v1/product/{productId})
+  Future<ProductDetailsModel> getProductDetails(String productId) async {
+    try {
+      final url = ApiEndpoints.productDetailsUrl(productId);
+      final response = await _dioClient.dio.get(url);
+
+      if (response.statusCode == 200) {
+        return ProductDetailsModel.fromJson(
+            response.data as Map<String, dynamic>);
+      } else {
+        throw Exception('Failed to load product details');
+      }
+    } on DioException catch (e) {
+      throw Exception('Error fetching product details: ${e.message}');
     }
   }
 }

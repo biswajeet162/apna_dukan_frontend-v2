@@ -26,9 +26,9 @@ class ProductRepository {
     throw UnimplementedError('Not implemented yet');
   }
 
+  // API CALL: Product Details API (/v1/product/{productId})
   Future<ProductDetailsModel> getProductDetails(String productId) async {
-    // TODO: Implement API call
-    throw UnimplementedError('Not implemented yet');
+    return await _remoteDataSource.getProductDetails(productId);
   }
 }
 

@@ -16,6 +16,7 @@ import '../features/product_group/domain/usecases/get_product_groups_usecase.dar
 import '../features/product/data/datasources/product_listing_remote_datasource.dart';
 import '../features/product/data/repositories/product_repository.dart';
 import '../features/product/domain/usecases/get_product_listing_usecase.dart';
+import '../features/product/domain/usecases/get_product_details_usecase.dart';
 import '../features/home/data/repositories/home_repository.dart';
 
 class ServiceLocator {
@@ -48,6 +49,7 @@ class ServiceLocator {
   late final GetSubCategoriesUseCase _getSubCategoriesUseCase;
   late final GetProductGroupsUseCase _getProductGroupsUseCase;
   late final GetProductListingUseCase _getProductListingUseCase;
+  late final GetProductDetailsUseCase _getProductDetailsUseCase;
 
   void init() {
     // Initialize core services
@@ -75,6 +77,7 @@ class ServiceLocator {
     _getSubCategoriesUseCase = GetSubCategoriesUseCase(_subCategoryRepository);
     _getProductGroupsUseCase = GetProductGroupsUseCase(_productGroupRepository);
     _getProductListingUseCase = GetProductListingUseCase(_productRepository);
+    _getProductDetailsUseCase = GetProductDetailsUseCase(_productRepository);
   }
 
   // Getters
@@ -85,6 +88,7 @@ class ServiceLocator {
   GetSubCategoriesUseCase get getSubCategoriesUseCase => _getSubCategoriesUseCase;
   GetProductGroupsUseCase get getProductGroupsUseCase => _getProductGroupsUseCase;
   GetProductListingUseCase get getProductListingUseCase => _getProductListingUseCase;
+  GetProductDetailsUseCase get getProductDetailsUseCase => _getProductDetailsUseCase;
   HomeRepository get homeRepository => _homeRepository;
   CategoryRepository get categoryRepository => _categoryRepository;
   SubCategoryRepository get subCategoryRepository => _subCategoryRepository;

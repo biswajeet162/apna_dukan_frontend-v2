@@ -32,11 +32,13 @@ class _HomePageState extends State<HomePage> {
   late int _currentIndex;
   String? _selectedSubCategoryId;
   String? _selectedSubCategoryName;
-  int _homeContentKeyCounter = 0; // Counter to force HomeContent recreation
 
   @override
   void initState() {
     super.initState();
+    // CRITICAL: Set initial tab BEFORE first build to prevent HomeContent from being created
+    // When loading /home/categories?subCategoryId=xxx, initialTab will be 1
+    // This ensures HomeContent is NEVER created, so NO Layout/Categories/Subcategories API calls
     _currentIndex = widget.initialTab ?? 0;
     _selectedSubCategoryId = widget.initialSubCategoryId;
     _selectedSubCategoryName = widget.initialSubCategoryName;
@@ -45,16 +47,22 @@ class _HomePageState extends State<HomePage> {
   @override
   void didUpdateWidget(HomePage oldWidget) {
     super.didUpdateWidget(oldWidget);
-    // Update tab when route changes (for deep linking)
+    // Update tab when route changes (for deep linking and back navigation)
     if (widget.initialTab != oldWidget.initialTab) {
       setState(() {
         _currentIndex = widget.initialTab ?? 0;
-        // When navigating to home tab (index 0), force reload
         if (_currentIndex == 0) {
+          // When going back to home tab, clear category selection
           _selectedSubCategoryId = null;
           _selectedSubCategoryName = null;
-          _homeContentKeyCounter++; // Force HomeContent recreation
         }
+      });
+    }
+    // Clear category selection when navigating back to home (initialTab becomes 0)
+    if (widget.initialTab == 0 && oldWidget.initialTab == 1) {
+      setState(() {
+        _selectedSubCategoryId = null;
+        _selectedSubCategoryName = null;
       });
     }
     if (widget.initialSubCategoryId != oldWidget.initialSubCategoryId ||
@@ -66,45 +74,94 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
-  List<Widget> get _pages => [
-    HomeContent(
-      key: ValueKey('home_content_$_homeContentKeyCounter'), // Key to force recreation
-      contentKey: ValueKey('home_content_$_homeContentKeyCounter'),
-      onSubCategoryTap: (subCategoryId, subCategoryName) {
-        setState(() {
-          _selectedSubCategoryId = subCategoryId;
-          _selectedSubCategoryName = subCategoryName;
-          _currentIndex = 1; // Navigate to Categories tab
-        });
-        // Update URL when navigating to categories tab
-        final uri = Uri(
-          path: '${AppRoutes.home}/categories',
-          queryParameters: {
-            'subCategoryId': subCategoryId,
-            'subCategoryName': subCategoryName,
+  // CRITICAL: Only create the active page to avoid unnecessary API calls
+  // When loading /home/categories?subCategoryId=xxx:
+  // - initialTab is 1, so _currentIndex is 1
+  // - This returns CategoriesPage, NOT HomeContent
+  // - HomeContent is NEVER created, so NO Layout/Categories/Subcategories API calls
+  // - Only ProductGroupsPage is created, making ONLY 2 API calls:
+  //   1. Product Groups API (/v1/subCategory/{subCategoryId}/productGroups)
+  //   2. Products API (/v1/productGroup/{productGroupId}/products)
+  Widget _getCurrentPage() {
+    // CRITICAL: Always use widget.initialTab if available to ensure correct page is shown
+    // This handles back navigation from /home/categories to /home
+    final effectiveTab = widget.initialTab ?? _currentIndex;
+    
+    // If initialTab changed, update _currentIndex to match
+    if (widget.initialTab != null && widget.initialTab != _currentIndex) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          setState(() {
+            _currentIndex = widget.initialTab!;
+            if (_currentIndex == 0) {
+              _selectedSubCategoryId = null;
+              _selectedSubCategoryName = null;
+            }
+          });
+        }
+      });
+    }
+    
+    switch (effectiveTab) {
+      case 0:
+        // Only create HomeContent when we're actually on the home tab (initialTab is 0 or null)
+        return HomeContent(
+          key: const ValueKey('home_content'),
+          onSubCategoryTap: (subCategoryId, subCategoryName) {
+            setState(() {
+              _selectedSubCategoryId = subCategoryId;
+              _selectedSubCategoryName = subCategoryName;
+              _currentIndex = 1; // Navigate to Categories tab
+            });
+            // Update URL when navigating to categories tab
+            final uri = Uri(
+              path: '${AppRoutes.home}/categories',
+              queryParameters: {
+                'subCategoryId': subCategoryId,
+                'subCategoryName': subCategoryName,
+              },
+            );
+            context.go(uri.toString());
           },
         );
-        context.go(uri.toString());
-      },
-    ),
-    CategoriesPage(
-      key: ValueKey('categories_${_selectedSubCategoryId ?? 'empty'}'), // Force rebuild when subCategoryId changes
-      subCategoryId: _selectedSubCategoryId,
-      subCategoryName: _selectedSubCategoryName,
-    ),
-    const OrdersPage(),
-  ];
+      case 1:
+        // Only show CategoriesPage when initialTab is 1 (from /home/categories route)
+        return CategoriesPage(
+          key: ValueKey('categories_${_selectedSubCategoryId ?? 'empty'}'), // Force rebuild when subCategoryId changes
+          subCategoryId: _selectedSubCategoryId,
+          subCategoryName: _selectedSubCategoryName,
+        );
+      case 2:
+        return const OrdersPage();
+      default:
+        // Default to HomeContent if tab is unknown
+        return HomeContent(
+          key: const ValueKey('home_content'),
+          onSubCategoryTap: (subCategoryId, subCategoryName) {
+            setState(() {
+              _selectedSubCategoryId = subCategoryId;
+              _selectedSubCategoryName = subCategoryName;
+              _currentIndex = 1;
+            });
+            final uri = Uri(
+              path: '${AppRoutes.home}/categories',
+              queryParameters: {
+                'subCategoryId': subCategoryId,
+                'subCategoryName': subCategoryName,
+              },
+            );
+            context.go(uri.toString());
+          },
+        );
+    }
+  }
 
   void _onNavTap(int index) {
     setState(() {
       _currentIndex = index;
-      // Clear subcategory selection when navigating to home
       if (index == 0) {
         _selectedSubCategoryId = null;
         _selectedSubCategoryName = null;
-        // Force HomeContent recreation by incrementing key counter
-        // This ensures initState is called and all 3 API calls are made
-        _homeContentKeyCounter++;
       }
     });
     
@@ -136,7 +193,7 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: _pages[_currentIndex],
+      body: _getCurrentPage(),
       bottomNavigationBar: AppNavbar(
         currentIndex: _currentIndex,
         onTap: _onNavTap,
@@ -147,12 +204,10 @@ class _HomePageState extends State<HomePage> {
 
 class HomeContent extends StatefulWidget {
   final Function(String subCategoryId, String subCategoryName)? onSubCategoryTap;
-  final Key? contentKey; // Key to force recreation when needed
 
   const HomeContent({
     super.key,
     this.onSubCategoryTap,
-    this.contentKey,
   });
 
   @override
@@ -168,48 +223,18 @@ class _HomeContentState extends State<HomeContent> {
   bool _isLoadingCategories = false;
   String? _errorMessage;
   String? _categoryErrorMessage;
-  bool _hasLoadedData = false; // Track if data has been loaded to prevent duplicate calls
 
   @override
   void initState() {
     super.initState();
-    // ONLY make these 3 API calls when HomeContent is initialized
+    // When route is /home, ALWAYS make these 3 API calls:
+    // 1. Layout API
+    // 2. Categories API  
+    // 3. Subcategories API (for all categories)
     _loadCatalogLayout();
   }
 
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    // Ensure data is loaded if widget is reused
-    if (!_hasLoadedData && !_isLoading) {
-      _loadCatalogLayout();
-    }
-  }
-
-  // Public method to reload data when navigating back to home
-  void reloadData() {
-    if (mounted) {
-      setState(() {
-        _hasLoadedData = false;
-        _catalogSections = [];
-        _categorySectionResponse = null;
-        _subCategoriesMap = {};
-        _loadingSubCategories = {};
-        _isLoading = true;
-        _isLoadingCategories = false;
-        _errorMessage = null;
-        _categoryErrorMessage = null;
-      });
-      _loadCatalogLayout();
-    }
-  }
-
   Future<void> _loadCatalogLayout() async {
-    // Prevent duplicate calls
-    if (_isLoading && _hasLoadedData) {
-      return;
-    }
-
     try {
       setState(() {
         _isLoading = true;
@@ -234,15 +259,11 @@ class _HomeContentState extends State<HomeContent> {
       } catch (e) {
         // No PRODUCT_CATEGORY section found, skip loading categories
         print('No PRODUCT_CATEGORY section found: $e');
-        setState(() {
-          _hasLoadedData = true;
-        });
       }
     } catch (e) {
       setState(() {
         _errorMessage = e.toString();
         _isLoading = false;
-        _hasLoadedData = true;
       });
     }
   }
@@ -263,19 +284,13 @@ class _HomeContentState extends State<HomeContent> {
       });
 
       // API CALL #3: Load Subcategories for ALL categories
-      // This is the ONLY place where subcategories are loaded
       for (var category in categoryResponse.categories) {
         _loadSubCategories(category.categoryId);
       }
-
-      setState(() {
-        _hasLoadedData = true;
-      });
     } catch (e) {
       setState(() {
         _categoryErrorMessage = e.toString();
         _isLoadingCategories = false;
-        _hasLoadedData = true;
       });
     }
   }
