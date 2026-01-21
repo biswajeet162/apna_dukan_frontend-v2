@@ -13,11 +13,13 @@ import '../../../../app/routes.dart';
 class ProductGroupsPage extends StatefulWidget {
   final String subCategoryId;
   final String subCategoryName;
+  final Widget? bottomNavigationBar;
 
   const ProductGroupsPage({
     super.key,
     required this.subCategoryId,
     required this.subCategoryName,
+    this.bottomNavigationBar,
   });
 
   @override
@@ -97,6 +99,7 @@ class _ProductGroupsPageState extends State<ProductGroupsPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      bottomNavigationBar: widget.bottomNavigationBar,
       body: SafeArea(
         child: Column(
           children: [

@@ -9,6 +9,7 @@ import '../../features/auth/presentation/signup/signup_page.dart';
 import '../../features/auth/presentation/forgot_password/forgot_password_page.dart';
 import '../../features/auth/presentation/otp/otp_page.dart';
 import '../../features/category/presentation/pages/category_page.dart';
+import '../../features/category/presentation/pages/categories_standalone_page.dart';
 import '../../features/subcategory/presentation/pages/subcategory_page.dart';
 import '../../features/product/presentation/pages/product_list_page.dart';
 import '../../features/product/presentation/pages/product_details_page.dart';
@@ -49,48 +50,45 @@ final GoRouter appRouter = GoRouter(
       builder: (context, state) => const SplashPage(),
     ),
 
-    // Home route with nested routes for tabs
+    // Home route - /home
     GoRoute(
       path: AppRoutes.home,
       builder: (context, state) {
-        // When route is /home, create new HomePage which creates new HomeContent
+        // When route is /home, create HomePage which shows HomeContent
         // HomeContent.initState() will make 3 API calls: Layout, Categories, Subcategories
-        // Router creates new widget instance on each navigation, so key ensures proper identity
-        return HomePage(
-          key: const ValueKey('home_page'),
-          initialTab: 0,
+        return const HomePage();
+      },
+    ),
+
+    // Categories route - /categories?subCategoryId=xxx&subCategoryName=xxx
+    GoRoute(
+      path: AppRoutes.categories,
+      builder: (context, state) {
+        final subCategoryId = state.uri.queryParameters['subCategoryId'];
+        final subCategoryNameEncoded = state.uri.queryParameters['subCategoryName'];
+        // Decode the subCategoryName (handles +, &, etc.)
+        final subCategoryName = subCategoryNameEncoded != null 
+            ? Uri.decodeComponent(subCategoryNameEncoded) 
+            : null;
+        // When loading /categories?subCategoryId=xxx, create CategoriesPage
+        // CategoriesPage will create ProductGroupsPage, making ONLY 2 API calls:
+        // 1. Product Groups API (/v1/subCategory/{subCategoryId}/productGroups)
+        // 2. Products API (/v1/productGroup/{productGroupId}/products)
+        return CategoriesStandalonePage(
+          subCategoryId: subCategoryId,
+          subCategoryName: subCategoryName,
         );
       },
-      routes: [
-        // Home tab (default)
-        GoRoute(
-          path: 'categories',
-          builder: (context, state) {
-            final subCategoryId = state.uri.queryParameters['subCategoryId'];
-            final subCategoryNameEncoded = state.uri.queryParameters['subCategoryName'];
-            // Decode the subCategoryName (handles +, &, etc.)
-            final subCategoryName = subCategoryNameEncoded != null 
-                ? Uri.decodeComponent(subCategoryNameEncoded) 
-                : null;
-            // CRITICAL: When loading /home/categories, create HomePage with initialTab: 1
-            // This ensures HomeContent is NEVER created, so NO Layout/Categories/Subcategories API calls
-            // Only ProductGroupsPage will be created, making ONLY 2 API calls:
-            // 1. Product Groups API
-            // 2. Products API (for first product group)
-            return HomePage(
-              key: ValueKey('home_categories_${subCategoryId ?? 'empty'}'),
-              initialTab: 1, // This prevents HomeContent from being created
-              initialSubCategoryId: subCategoryId,
-              initialSubCategoryName: subCategoryName,
-            );
-          },
-        ),
-        // Orders tab
-        GoRoute(
-          path: 'orders',
-          builder: (context, state) => HomePage(initialTab: 2),
-        ),
-      ],
+    ),
+
+    // Orders route - /orders?userId=xxx
+    GoRoute(
+      path: AppRoutes.orders,
+      builder: (context, state) {
+        final userId = state.uri.queryParameters['userId'];
+        // When loading /orders?userId=xxx, create OrderListPage
+        return OrderListPage(userId: userId);
+      },
     ),
 
     // Auth routes
@@ -111,9 +109,9 @@ final GoRouter appRouter = GoRouter(
       builder: (context, state) => const OtpPage(),
     ),
 
-    // Category routes
+    // Category routes (legacy - for browsing categories by section)
     GoRoute(
-      path: AppRoutes.categories,
+      path: '/category-section',
       builder: (context, state) => const CategoryPage(sectionId: ''),
     ),
     GoRoute(
@@ -180,11 +178,7 @@ final GoRouter appRouter = GoRouter(
       builder: (context, state) => const CheckoutPage(),
     ),
 
-    // Order routes
-    GoRoute(
-      path: AppRoutes.orders,
-      builder: (context, state) => const OrderListPage(),
-    ),
+    // Order detail route (individual order)
     GoRoute(
       path: '/order/:orderId',
       builder: (context, state) {
