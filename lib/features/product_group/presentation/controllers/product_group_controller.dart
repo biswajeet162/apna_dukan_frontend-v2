@@ -1,6 +1,7 @@
 // Product Group Controller
 import 'package:flutter/material.dart';
 import '../../data/models/product_group_model.dart';
+import '../../data/models/product_group_response.dart';
 import '../../data/repositories/product_group_repository.dart';
 
 class ProductGroupController extends ChangeNotifier {
@@ -22,7 +23,8 @@ class ProductGroupController extends ChangeNotifier {
       _errorMessage = null;
       notifyListeners();
 
-      _productGroups = await _repository.getProductGroupsForSubCategory(subCategoryId);
+      final response = await _repository.getProductGroupsForSubCategory(subCategoryId);
+      _productGroups = response.productGroups;
 
       _isLoading = false;
       notifyListeners();

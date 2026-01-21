@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import '../../../core/routes/app_routes.dart';
+import 'package:go_router/go_router.dart';
+import '../../../app/routes.dart';
 
 class SplashPage extends StatefulWidget {
   const SplashPage({super.key});
@@ -18,7 +19,7 @@ class _SplashPageState extends State<SplashPage> {
   _navigateToHome() {
     Future.delayed(const Duration(seconds: 2), () {
       if (mounted) {
-        Navigator.pushReplacementNamed(context, AppRoutes.home);
+        context.go(AppRoutes.home);
       }
     });
   }

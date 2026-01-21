@@ -1,7 +1,9 @@
 // Product Card Widget
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../../data/models/product_list_model.dart';
+import '../../../../app/routes.dart';
 
 class ProductCard extends StatelessWidget {
   final ProductListModel product;
@@ -17,7 +19,9 @@ class ProductCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Card(
       child: InkWell(
-        onTap: onTap,
+        onTap: onTap ?? () {
+          context.push(AppRoutes.productDetailsWithId(product.productId));
+        },
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [

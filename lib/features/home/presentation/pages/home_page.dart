@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../../../search/presentation/search_bar_widget.dart';
 import '../../../../core/widgets/app_navbar.dart';
@@ -12,16 +13,46 @@ import '../../../subcategory/data/models/subcategory_model.dart';
 import '../../../product_group/presentation/pages/product_groups_page.dart';
 
 class HomePage extends StatefulWidget {
-  const HomePage({super.key});
+  final int? initialTab;
+  final String? initialSubCategoryId;
+  final String? initialSubCategoryName;
+
+  const HomePage({
+    super.key,
+    this.initialTab,
+    this.initialSubCategoryId,
+    this.initialSubCategoryName,
+  });
 
   @override
   State<HomePage> createState() => _HomePageState();
 }
 
 class _HomePageState extends State<HomePage> {
-  int _currentIndex = 0;
+  late int _currentIndex;
   String? _selectedSubCategoryId;
   String? _selectedSubCategoryName;
+
+  @override
+  void initState() {
+    super.initState();
+    _currentIndex = widget.initialTab ?? 0;
+    _selectedSubCategoryId = widget.initialSubCategoryId;
+    _selectedSubCategoryName = widget.initialSubCategoryName;
+  }
+
+  @override
+  void didUpdateWidget(HomePage oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // Update tab when route changes
+    if (widget.initialTab != oldWidget.initialTab) {
+      _currentIndex = widget.initialTab ?? 0;
+    }
+    if (widget.initialSubCategoryId != oldWidget.initialSubCategoryId) {
+      _selectedSubCategoryId = widget.initialSubCategoryId;
+      _selectedSubCategoryName = widget.initialSubCategoryName;
+    }
+  }
 
   List<Widget> get _pages => [
     HomeContent(
@@ -31,6 +62,8 @@ class _HomePageState extends State<HomePage> {
           _selectedSubCategoryName = subCategoryName;
           _currentIndex = 1; // Navigate to Categories tab
         });
+        // Update URL when navigating to categories tab
+        context.go('${AppRoutes.home}/categories?subCategoryId=$subCategoryId&subCategoryName=${Uri.encodeComponent(subCategoryName)}');
       },
     ),
     CategoriesPage(
@@ -44,6 +77,22 @@ class _HomePageState extends State<HomePage> {
     setState(() {
       _currentIndex = index;
     });
+    
+    // Update URL based on tab selection
+    switch (index) {
+      case 0:
+        context.go(AppRoutes.home);
+        break;
+      case 1:
+        final queryParams = _selectedSubCategoryId != null && _selectedSubCategoryName != null
+            ? '?subCategoryId=$_selectedSubCategoryId&subCategoryName=${Uri.encodeComponent(_selectedSubCategoryName!)}'
+            : '';
+        context.go('${AppRoutes.home}/categories$queryParams');
+        break;
+      case 2:
+        context.go('${AppRoutes.home}/orders');
+        break;
+    }
   }
 
   @override

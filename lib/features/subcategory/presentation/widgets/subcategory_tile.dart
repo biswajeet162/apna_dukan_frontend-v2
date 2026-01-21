@@ -1,7 +1,9 @@
 // SubCategory Tile Widget
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../../data/models/subcategory_model.dart';
+import '../../../../app/routes.dart';
 
 class SubCategoryTile extends StatelessWidget {
   final SubCategoryModel subcategory;
@@ -41,7 +43,7 @@ class SubCategoryTile extends StatelessWidget {
       subtitle: subcategory.description != null ? Text(subcategory.description!) : null,
       trailing: const Icon(Icons.chevron_right),
       onTap: () {
-        // TODO: Navigate to product group page
+        context.push(AppRoutes.subcategoryWithId(subcategory.subCategoryId));
       },
     );
   }

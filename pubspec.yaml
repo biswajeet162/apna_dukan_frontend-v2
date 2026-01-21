@@ -40,6 +40,9 @@ dependencies:
   
   # Image loading
   cached_network_image: ^3.3.0
+  
+  # Routing
+  go_router: ^14.0.0
 
 dev_dependencies:
   flutter_test:

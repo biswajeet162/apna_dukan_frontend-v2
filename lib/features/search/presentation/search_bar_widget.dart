@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import '../../../../core/routes/app_routes.dart';
+import 'package:go_router/go_router.dart';
+import '../../../../app/routes.dart';
 
 class SearchBarWidget extends StatelessWidget {
   final VoidCallback? onTap;
@@ -15,7 +16,7 @@ class SearchBarWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: onTap ?? () {
-        Navigator.pushNamed(context, AppRoutes.search);
+        context.push(AppRoutes.search);
       },
       child: Container(
         margin: const EdgeInsets.only(left: 16, right: 16, top: 0, bottom: 12),

@@ -1,7 +1,9 @@
 // Product Group Card Widget
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../../data/models/product_group_model.dart';
+import '../../../../app/routes.dart';
 
 class ProductGroupCard extends StatelessWidget {
   final ProductGroupModel productGroup;
@@ -24,7 +26,7 @@ class ProductGroupCard extends StatelessWidget {
       ),
       child: InkWell(
         onTap: () {
-          // TODO: Navigate to product list page for this product group
+          context.push(AppRoutes.productGroupWithId(productGroup.productGroupId));
         },
         borderRadius: BorderRadius.circular(12),
         child: Column(

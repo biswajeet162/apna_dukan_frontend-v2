@@ -1,10 +1,12 @@
 // Product Groups Page - Shows product groups for a subcategory
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../../../../di/service_locator.dart';
 import '../../data/models/product_group_response.dart';
 import '../../data/models/product_group_model.dart';
 import '../widgets/product_group_card.dart';
+import '../../../../app/routes.dart';
 
 class ProductGroupsPage extends StatefulWidget {
   final String subCategoryId;
@@ -123,7 +125,7 @@ class _ProductGroupsPageState extends State<ProductGroupsPage> {
         children: [
           IconButton(
             icon: const Icon(Icons.arrow_back, color: Colors.white),
-            onPressed: () => Navigator.of(context).pop(),
+            onPressed: () => context.pop(),
           ),
           Expanded(
             child: Text(
@@ -138,7 +140,7 @@ class _ProductGroupsPageState extends State<ProductGroupsPage> {
           IconButton(
             icon: const Icon(Icons.search, color: Colors.white),
             onPressed: () {
-              // TODO: Navigate to search
+              context.push(AppRoutes.search);
             },
           ),
         ],

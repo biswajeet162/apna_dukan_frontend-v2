@@ -1,6 +1,8 @@
 // Category Tile Widget
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import '../../data/models/category_model.dart';
+import '../../../../app/routes.dart';
 
 class CategoryTile extends StatelessWidget {
   final CategoryModel category;
@@ -17,7 +19,7 @@ class CategoryTile extends StatelessWidget {
       subtitle: category.description != null ? Text(category.description!) : null,
       trailing: const Icon(Icons.chevron_right),
       onTap: () {
-        // TODO: Navigate to subcategory page
+        context.push(AppRoutes.categoryWithId(category.categoryId));
       },
     );
   }
