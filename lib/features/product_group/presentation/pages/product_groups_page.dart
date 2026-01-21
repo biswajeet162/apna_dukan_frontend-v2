@@ -5,7 +5,9 @@ import 'package:cached_network_image/cached_network_image.dart';
 import '../../../../di/service_locator.dart';
 import '../../data/models/product_group_response.dart';
 import '../../data/models/product_group_model.dart';
-import '../widgets/product_group_card.dart';
+import '../../../product/data/models/product_listing_response.dart';
+import '../../../product/data/models/product_listing_item.dart';
+import '../../../product/presentation/widgets/product_listing_card.dart';
 import '../../../../app/routes.dart';
 
 class ProductGroupsPage extends StatefulWidget {
@@ -24,9 +26,13 @@ class ProductGroupsPage extends StatefulWidget {
 
 class _ProductGroupsPageState extends State<ProductGroupsPage> {
   ProductGroupResponse? _productGroupResponse;
+  ProductListingResponse? _productListingResponse;
   bool _isLoading = true;
+  bool _isLoadingProducts = false;
   String? _errorMessage;
+  String? _productErrorMessage;
   int _selectedIndex = 0;
+  String? _selectedProductGroupId;
 
   @override
   void initState() {
@@ -47,10 +53,39 @@ class _ProductGroupsPageState extends State<ProductGroupsPage> {
         _productGroupResponse = response;
         _isLoading = false;
       });
+
+      // Load products for the first product group by default
+      if (response.productGroups.isNotEmpty) {
+        _selectedIndex = 0;
+        _selectedProductGroupId = response.productGroups[0].productGroupId;
+        _loadProducts(response.productGroups[0].productGroupId);
+      }
     } catch (e) {
       setState(() {
         _errorMessage = e.toString();
         _isLoading = false;
+      });
+    }
+  }
+
+  Future<void> _loadProducts(String productGroupId) async {
+    try {
+      setState(() {
+        _isLoadingProducts = true;
+        _productErrorMessage = null;
+      });
+
+      final response = await ServiceLocator()
+          .getProductListingUseCase(productGroupId, size: 100);
+
+      setState(() {
+        _productListingResponse = response;
+        _isLoadingProducts = false;
+      });
+    } catch (e) {
+      setState(() {
+        _productErrorMessage = e.toString();
+        _isLoadingProducts = false;
       });
     }
   }
@@ -224,8 +259,9 @@ class _ProductGroupsPageState extends State<ProductGroupsPage> {
             onTap: () {
               setState(() {
                 _selectedIndex = index;
+                _selectedProductGroupId = productGroup.productGroupId;
               });
-              // Scroll to selected item in grid
+              _loadProducts(productGroup.productGroupId);
             },
             child: Container(
               padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
@@ -302,12 +338,39 @@ class _ProductGroupsPageState extends State<ProductGroupsPage> {
   }
 
   Widget _buildProductGroupsGrid() {
-    if (_productGroupResponse == null) {
-      return const SizedBox.shrink();
+    if (_isLoadingProducts) {
+      return const Center(child: CircularProgressIndicator());
     }
 
-    // Show all product groups or filter by selected index
-    final productGroupsToShow = _productGroupResponse!.productGroups;
+    if (_productErrorMessage != null) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              'Error loading products: $_productErrorMessage',
+              style: TextStyle(color: Colors.red[700]),
+            ),
+            const SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: () {
+                if (_selectedProductGroupId != null) {
+                  _loadProducts(_selectedProductGroupId!);
+                }
+              },
+              child: const Text('Retry'),
+            ),
+          ],
+        ),
+      );
+    }
+
+    if (_productListingResponse == null ||
+        _productListingResponse!.products.isEmpty) {
+      return const Center(
+        child: Text('No products found'),
+      );
+    }
 
     return GridView.builder(
       padding: const EdgeInsets.all(16),
@@ -315,12 +378,12 @@ class _ProductGroupsPageState extends State<ProductGroupsPage> {
         crossAxisCount: 2,
         crossAxisSpacing: 12,
         mainAxisSpacing: 12,
-        childAspectRatio: 0.75,
+        childAspectRatio: 0.65,
       ),
-      itemCount: productGroupsToShow.length,
+      itemCount: _productListingResponse!.products.length,
       itemBuilder: (context, index) {
-        return ProductGroupCard(
-          productGroup: productGroupsToShow[index],
+        return ProductListingCard(
+          product: _productListingResponse!.products[index],
         );
       },
     );
