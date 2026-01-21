@@ -7,6 +7,7 @@ class ProductListingItem {
   final DefaultVariant defaultVariant;
   final ProductPricing pricing;
   final ProductAvailability availability;
+  final ProductMetrics? metrics;
 
   ProductListingItem({
     required this.productId,
@@ -16,6 +17,7 @@ class ProductListingItem {
     required this.defaultVariant,
     required this.pricing,
     required this.availability,
+    this.metrics,
   });
 
   factory ProductListingItem.fromJson(Map<String, dynamic> json) {
@@ -29,6 +31,9 @@ class ProductListingItem {
       pricing: ProductPricing.fromJson(json['pricing'] as Map<String, dynamic>),
       availability: ProductAvailability.fromJson(
           json['availability'] as Map<String, dynamic>),
+      metrics: json['metrics'] != null
+          ? ProductMetrics.fromJson(json['metrics'] as Map<String, dynamic>)
+          : null,
     );
   }
 
@@ -41,6 +46,7 @@ class ProductListingItem {
       'defaultVariant': defaultVariant.toJson(),
       'pricing': pricing.toJson(),
       'availability': availability.toJson(),
+      'metrics': metrics?.toJson(),
     };
   }
 }
@@ -148,6 +154,78 @@ class ProductAvailability {
     return {
       'inStock': inStock,
       'availableQuantity': availableQuantity,
+    };
+  }
+}
+
+class ProductMetrics {
+  final ProductRating? rating;
+  final ProductPopularity? popularity;
+
+  ProductMetrics({
+    this.rating,
+    this.popularity,
+  });
+
+  factory ProductMetrics.fromJson(Map<String, dynamic> json) {
+    return ProductMetrics(
+      rating: json['rating'] != null
+          ? ProductRating.fromJson(json['rating'] as Map<String, dynamic>)
+          : null,
+      popularity: json['popularity'] != null
+          ? ProductPopularity.fromJson(json['popularity'] as Map<String, dynamic>)
+          : null,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'rating': rating?.toJson(),
+      'popularity': popularity?.toJson(),
+    };
+  }
+}
+
+class ProductRating {
+  final double average;
+  final int count;
+
+  ProductRating({
+    required this.average,
+    required this.count,
+  });
+
+  factory ProductRating.fromJson(Map<String, dynamic> json) {
+    return ProductRating(
+      average: (json['average'] as num).toDouble(),
+      count: json['count'] as int,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'average': average,
+      'count': count,
+    };
+  }
+}
+
+class ProductPopularity {
+  final int totalPurchased;
+
+  ProductPopularity({
+    required this.totalPurchased,
+  });
+
+  factory ProductPopularity.fromJson(Map<String, dynamic> json) {
+    return ProductPopularity(
+      totalPurchased: json['totalPurchased'] as int,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'totalPurchased': totalPurchased,
     };
   }
 }
