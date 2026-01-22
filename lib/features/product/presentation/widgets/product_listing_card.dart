@@ -166,7 +166,7 @@ class ProductListingCard extends StatelessWidget {
                     product.name,
                     style: const TextStyle(
                       fontWeight: FontWeight.bold,
-                      fontSize: 11,
+                      fontSize: 13,
                       height: 1.1,
                     ),
                     maxLines: 2,
@@ -175,7 +175,10 @@ class ProductListingCard extends StatelessWidget {
                   const SizedBox(height: 2),
                   // Rating Section
                   if (product.metrics?.rating != null)
-                    _buildRatingWidget(product.metrics!.rating!),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 2),
+                      child: _buildRatingWidget(product.metrics!.rating!),
+                    ),
                   const SizedBox(height: 3),
                   // Availability (Only X left)
                   if (product.availability.availableQuantity > 0 &&
@@ -307,33 +310,33 @@ class ProductListingCard extends StatelessWidget {
               // Fully filled star
               return const Icon(
                 Icons.star,
-                size: 11,
+                size: 13,
                 color: Colors.amber,
               );
             } else if (starValue - rating.average < 1 && starValue - rating.average > 0) {
               // Partially filled star (half star)
               return const Icon(
                 Icons.star_half,
-                size: 11,
+                size: 13,
                 color: Colors.amber,
               );
             } else {
               // Empty star
               return const Icon(
                 Icons.star_border,
-                size: 11,
+                size: 13,
                 color: Colors.amber,
               );
             }
           }),
         ),
-        const SizedBox(width: 2),
+        const SizedBox(width: 3),
         // Rating value and count in brackets (e.g., "4.5 (8,490)")
         Flexible(
           child: Text(
             '${rating.average.toStringAsFixed(1)} ${formatCount(rating.count)}',
             style: TextStyle(
-              fontSize: 9,
+              fontSize: 10,
               color: Colors.grey[700],
               fontWeight: FontWeight.w500,
             ),

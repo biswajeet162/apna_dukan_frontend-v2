@@ -389,11 +389,11 @@ class _ProductGroupsPageState extends State<ProductGroupsPage> {
     }
 
     return GridView.builder(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(8),
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 2,
-        crossAxisSpacing: 6,
-        mainAxisSpacing: 12,
+        crossAxisSpacing: 4,
+        mainAxisSpacing: 8,
         childAspectRatio: 0.50, // Increased for larger cards
       ),
       itemCount: _productListingResponse!.products.length,
