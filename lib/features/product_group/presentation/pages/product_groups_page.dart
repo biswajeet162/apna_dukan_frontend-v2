@@ -388,7 +388,7 @@ class _ProductGroupsPageState extends State<ProductGroupsPage> {
         crossAxisCount: 2,
         crossAxisSpacing: 12,
         mainAxisSpacing: 12,
-        childAspectRatio: 0.48, // More vertical space to prevent overflow
+        childAspectRatio: 0.46, // More vertical space to prevent overflow
       ),
       itemCount: _productListingResponse!.products.length,
       itemBuilder: (context, index) {

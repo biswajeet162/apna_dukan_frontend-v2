@@ -128,7 +128,7 @@ class ProductListingCard extends StatelessWidget {
             ),
             // Content Section
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 6.0),
+              padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 5.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisSize: MainAxisSize.min,
@@ -138,8 +138,8 @@ class ProductListingCard extends StatelessWidget {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Container(
-                        width: 6,
-                        height: 6,
+                        width: 5,
+                        height: 5,
                         decoration: BoxDecoration(
                           color: Colors.green[600],
                           shape: BoxShape.circle,
@@ -150,7 +150,7 @@ class ProductListingCard extends StatelessWidget {
                         child: Text(
                           product.defaultVariant.label,
                           style: TextStyle(
-                            fontSize: 10,
+                            fontSize: 9,
                             color: Colors.grey[600],
                             fontWeight: FontWeight.w500,
                           ),
@@ -160,59 +160,59 @@ class ProductListingCard extends StatelessWidget {
                       ),
                     ],
                   ),
-                  const SizedBox(height: 3),
+                  const SizedBox(height: 2),
                   // Product Name
                   Text(
                     product.name,
                     style: const TextStyle(
                       fontWeight: FontWeight.bold,
-                      fontSize: 12,
-                      height: 1.15,
+                      fontSize: 11,
+                      height: 1.1,
                     ),
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                   ),
-                  const SizedBox(height: 3),
+                  const SizedBox(height: 2),
                   // Rating Section
                   if (product.metrics?.rating != null)
                     _buildRatingWidget(product.metrics!.rating!),
-                  const SizedBox(height: 4),
+                  const SizedBox(height: 3),
                   // Availability (Only X left)
                   if (product.availability.availableQuantity > 0 &&
                       product.availability.availableQuantity <= 5)
                     Text(
                       'Only ${product.availability.availableQuantity} left',
                       style: TextStyle(
-                        fontSize: 9,
+                        fontSize: 8,
                         color: Colors.orange[700],
                         fontWeight: FontWeight.w500,
                       ),
                     ),
                   if (product.availability.availableQuantity > 0 &&
                       product.availability.availableQuantity <= 5)
-                    const SizedBox(height: 2),
+                    const SizedBox(height: 1),
                   // Discount badge (green, not blue)
                   if (product.pricing.discountPercent > 0)
                     Text(
                       '${product.pricing.discountPercent}% OFF',
                       style: TextStyle(
-                        fontSize: 9,
+                        fontSize: 8,
                         color: Colors.green[700],
                         fontWeight: FontWeight.w600,
                       ),
                     ),
                   if (product.pricing.discountPercent > 0)
-                    const SizedBox(height: 2),
+                    const SizedBox(height: 1),
                   // Pricing Section
                   Wrap(
-                    spacing: 4,
-                    runSpacing: 2,
+                    spacing: 3,
+                    runSpacing: 1,
                     crossAxisAlignment: WrapCrossAlignment.center,
                     children: [
                       Text(
                         '₹${product.pricing.sellingPrice.toStringAsFixed(0)}',
                         style: const TextStyle(
-                          fontSize: 15,
+                          fontSize: 14,
                           fontWeight: FontWeight.bold,
                           color: Colors.black,
                         ),
@@ -220,7 +220,7 @@ class ProductListingCard extends StatelessWidget {
                       Text(
                         'MRP ₹${product.pricing.mrp.toStringAsFixed(0)}',
                         style: TextStyle(
-                          fontSize: 10,
+                          fontSize: 9,
                           decoration: TextDecoration.lineThrough,
                           color: Colors.grey[600],
                         ),
@@ -235,22 +235,22 @@ class ProductListingCard extends StatelessWidget {
           ),
           // ADD button at bottom right
           Positioned(
-            bottom: 8,
-            right: 8,
+            bottom: 6,
+            right: 6,
             child: GestureDetector(
               onTap: () {
                 // TODO: Add to cart
               },
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
                   color: Colors.green[700],
-                  borderRadius: BorderRadius.circular(6),
+                  borderRadius: BorderRadius.circular(5),
                   boxShadow: [
                     BoxShadow(
                       color: Colors.black.withOpacity(0.2),
-                      blurRadius: 4,
-                      offset: const Offset(0, 2),
+                      blurRadius: 3,
+                      offset: const Offset(0, 1),
                     ),
                   ],
                 ),
@@ -258,7 +258,7 @@ class ProductListingCard extends StatelessWidget {
                   'ADD',
                   style: TextStyle(
                     color: Colors.white,
-                    fontSize: 11,
+                    fontSize: 10,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
@@ -305,33 +305,33 @@ class ProductListingCard extends StatelessWidget {
               // Fully filled star
               return const Icon(
                 Icons.star,
-                size: 12,
+                size: 11,
                 color: Colors.amber,
               );
             } else if (starValue - rating.average < 1 && starValue - rating.average > 0) {
               // Partially filled star (half star)
               return const Icon(
                 Icons.star_half,
-                size: 12,
+                size: 11,
                 color: Colors.amber,
               );
             } else {
               // Empty star
               return const Icon(
                 Icons.star_border,
-                size: 12,
+                size: 11,
                 color: Colors.amber,
               );
             }
           }),
         ),
-        const SizedBox(width: 3),
+        const SizedBox(width: 2),
         // Rating value and count in brackets (e.g., "4.5 (8,490)")
         Flexible(
           child: Text(
             '${rating.average.toStringAsFixed(1)} ${formatCount(rating.count)}',
             style: TextStyle(
-              fontSize: 10,
+              fontSize: 9,
               color: Colors.grey[700],
               fontWeight: FontWeight.w500,
             ),
