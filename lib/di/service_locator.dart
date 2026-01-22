@@ -18,6 +18,11 @@ import '../features/product/data/repositories/product_repository.dart';
 import '../features/product/domain/usecases/get_product_listing_usecase.dart';
 import '../features/product/domain/usecases/get_product_details_usecase.dart';
 import '../features/home/data/repositories/home_repository.dart';
+import '../features/auth/data/datasources/auth_remote_datasource.dart';
+import '../features/auth/data/repositories/auth_repository.dart';
+import '../features/auth/domain/usecases/login_usecase.dart';
+import '../features/auth/domain/usecases/signup_usecase.dart';
+import '../core/storage/secure_storage.dart';
 
 class ServiceLocator {
   static final ServiceLocator _instance = ServiceLocator._internal();
@@ -27,6 +32,7 @@ class ServiceLocator {
   // Core
   late final DioClient _dioClient;
   late final ApiClient _apiClient;
+  late final SecureStorage _secureStorage;
 
   // Data Sources
   late final CatalogLayoutRemoteDataSource _catalogLayoutRemoteDataSource;
@@ -34,6 +40,7 @@ class ServiceLocator {
   late final SubCategoryRemoteDataSource _subCategoryRemoteDataSource;
   late final ProductGroupRemoteDataSource _productGroupRemoteDataSource;
   late final ProductListingRemoteDataSource _productListingRemoteDataSource;
+  late final AuthRemoteDataSource _authRemoteDataSource;
 
   // Repositories
   late final CatalogLayoutRepository _catalogLayoutRepository;
@@ -42,6 +49,7 @@ class ServiceLocator {
   late final ProductGroupRepository _productGroupRepository;
   late final ProductRepository _productRepository;
   late final HomeRepository _homeRepository;
+  late final AuthRepository _authRepository;
 
   // Use Cases
   late final GetCatalogLayoutUseCase _getCatalogLayoutUseCase;
@@ -50,11 +58,14 @@ class ServiceLocator {
   late final GetProductGroupsUseCase _getProductGroupsUseCase;
   late final GetProductListingUseCase _getProductListingUseCase;
   late final GetProductDetailsUseCase _getProductDetailsUseCase;
+  late final LoginUseCase _loginUseCase;
+  late final SignupUseCase _signupUseCase;
 
   void init() {
     // Initialize core services
     _dioClient = DioClient();
     _apiClient = ApiClient(_dioClient);
+    _secureStorage = SecureStorage();
 
     // Initialize data sources
     _catalogLayoutRemoteDataSource = CatalogLayoutRemoteDataSource(_dioClient);
@@ -62,6 +73,7 @@ class ServiceLocator {
     _subCategoryRemoteDataSource = SubCategoryRemoteDataSource(_dioClient);
     _productGroupRemoteDataSource = ProductGroupRemoteDataSource(_dioClient);
     _productListingRemoteDataSource = ProductListingRemoteDataSource(_dioClient);
+    _authRemoteDataSource = AuthRemoteDataSource(_dioClient);
 
     // Initialize repositories
     _catalogLayoutRepository = CatalogLayoutRepository(_catalogLayoutRemoteDataSource);
@@ -70,6 +82,7 @@ class ServiceLocator {
     _productGroupRepository = ProductGroupRepository(_productGroupRemoteDataSource);
     _productRepository = ProductRepository(_productListingRemoteDataSource);
     _homeRepository = HomeRepository(_catalogLayoutRepository);
+    _authRepository = AuthRepository(_authRemoteDataSource);
 
     // Initialize use cases
     _getCatalogLayoutUseCase = GetCatalogLayoutUseCase(_catalogLayoutRepository);
@@ -78,6 +91,8 @@ class ServiceLocator {
     _getProductGroupsUseCase = GetProductGroupsUseCase(_productGroupRepository);
     _getProductListingUseCase = GetProductListingUseCase(_productRepository);
     _getProductDetailsUseCase = GetProductDetailsUseCase(_productRepository);
+    _loginUseCase = LoginUseCase(_authRepository);
+    _signupUseCase = SignupUseCase(_authRepository);
   }
 
   // Getters
@@ -94,4 +109,8 @@ class ServiceLocator {
   SubCategoryRepository get subCategoryRepository => _subCategoryRepository;
   ProductGroupRepository get productGroupRepository => _productGroupRepository;
   ProductRepository get productRepository => _productRepository;
+  AuthRepository get authRepository => _authRepository;
+  SecureStorage get secureStorage => _secureStorage;
+  LoginUseCase get loginUseCase => _loginUseCase;
+  SignupUseCase get signupUseCase => _signupUseCase;
 }

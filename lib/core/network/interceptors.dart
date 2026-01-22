@@ -1,14 +1,17 @@
 // HTTP Interceptors
 import 'package:dio/dio.dart';
+import '../storage/secure_storage.dart';
 
 class AuthInterceptor extends Interceptor {
+  final SecureStorage _secureStorage = SecureStorage();
+
   @override
-  void onRequest(RequestOptions options, RequestInterceptorHandler handler) {
-    // TODO: Add authentication token if needed
-    // final token = AuthService.getToken();
-    // if (token != null) {
-    //   options.headers['Authorization'] = 'Bearer $token';
-    // }
+  void onRequest(RequestOptions options, RequestInterceptorHandler handler) async {
+    // Add authentication token if available
+    final token = await _secureStorage.getToken();
+    if (token != null && token.isNotEmpty) {
+      options.headers['Authorization'] = 'Bearer $token';
+    }
     super.onRequest(options, handler);
   }
 }

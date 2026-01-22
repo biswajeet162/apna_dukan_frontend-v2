@@ -8,6 +8,10 @@ class ApiEndpoints {
   static const String productsForProductGroup = '/v1/productGroup/{productGroupId}/products';
   static const String productDetails = '/v1/product/{productId}';
 
+  // Auth endpoints
+  static const String login = '/v1/auth/login';
+  static const String signup = '/v1/auth/signup';
+
   // Helper methods
   static String categoriesForSectionUrl(String sectionId) {
     return categoriesForSection.replaceAll('{sectionId}', sectionId);
