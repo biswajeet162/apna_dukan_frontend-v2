@@ -392,9 +392,9 @@ class _ProductGroupsPageState extends State<ProductGroupsPage> {
       padding: const EdgeInsets.all(16),
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 2,
-        crossAxisSpacing: 12,
+        crossAxisSpacing: 6,
         mainAxisSpacing: 12,
-        childAspectRatio: 0.46, // More vertical space to prevent overflow
+        childAspectRatio: 0.50, // Increased for larger cards
       ),
       itemCount: _productListingResponse!.products.length,
       itemBuilder: (context, index) {

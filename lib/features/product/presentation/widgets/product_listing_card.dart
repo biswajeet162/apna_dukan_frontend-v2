@@ -191,18 +191,6 @@ class ProductListingCard extends StatelessWidget {
                   if (product.availability.availableQuantity > 0 &&
                       product.availability.availableQuantity <= 5)
                     const SizedBox(height: 1),
-                  // Discount badge (green, not blue)
-                  if (product.pricing.discountPercent > 0)
-                    Text(
-                      '${product.pricing.discountPercent}% OFF',
-                      style: TextStyle(
-                        fontSize: 8,
-                        color: Colors.green[700],
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  if (product.pricing.discountPercent > 0)
-                    const SizedBox(height: 1),
                   // Pricing Section
                   Wrap(
                     spacing: 3,
@@ -233,6 +221,20 @@ class ProductListingCard extends StatelessWidget {
               ],
             ),
           ),
+          // Discount at bottom left
+          if (product.pricing.discountPercent > 0)
+            Positioned(
+              bottom: 6,
+              left: 8,
+              child: Text(
+                '${product.pricing.discountPercent}% OFF',
+                style: TextStyle(
+                  fontSize: 9,
+                  color: Colors.green[700],
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
           // ADD button at bottom right
           Positioned(
             bottom: 6,
