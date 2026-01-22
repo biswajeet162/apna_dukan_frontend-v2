@@ -287,8 +287,8 @@ class _ProductGroupsPageState extends State<ProductGroupsPage> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Container(
-                    width: 50,
-                    height: 50,
+                    width: 56,
+                    height: 56,
                     padding: const EdgeInsets.all(2),
                     decoration: BoxDecoration(
                       color: Colors.white,
@@ -308,8 +308,8 @@ class _ProductGroupsPageState extends State<ProductGroupsPage> {
                                 color: Colors.grey[200],
                                 child: const Center(
                                   child: SizedBox(
-                                    width: 18,
-                                    height: 18,
+                                    width: 20,
+                                    height: 20,
                                     child: CircularProgressIndicator(strokeWidth: 2),
                                   ),
                                 ),
@@ -317,13 +317,13 @@ class _ProductGroupsPageState extends State<ProductGroupsPage> {
                               errorWidget: (context, url, error) => Icon(
                                 Icons.image_not_supported,
                                 color: Colors.grey[400],
-                                size: 20,
+                                size: 22,
                               ),
                             )
                           : Icon(
                               Icons.category,
                               color: Colors.grey[400],
-                              size: 24,
+                              size: 26,
                             ),
                     ),
                   ),
