@@ -4,7 +4,7 @@ build/
 .flutter-plugins
 .flutter-plugins-dependencies
 
-# IDE
+# IDEd
 .idea/
 .vscode/
 *.iml

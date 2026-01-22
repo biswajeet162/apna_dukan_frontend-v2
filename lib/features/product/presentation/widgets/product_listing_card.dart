@@ -126,144 +126,99 @@ class ProductListingCard extends StatelessWidget {
             ),
             // Content Section
             Padding(
-              padding: const EdgeInsets.all(10.0),
+              padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 6.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  // Ad label and ADD button row
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Ad label (if applicable - can be added later)
-                      const SizedBox.shrink(),
-                      // ADD button on the right
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.end,
-                        children: [
-                          ElevatedButton(
-                            onPressed: product.availability.inStock
-                                ? () {
-                                    // TODO: Add to cart
-                                  }
-                                : null,
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.green[700],
-                              foregroundColor: Colors.white,
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 20, vertical: 8),
-                              minimumSize: const Size(0, 36),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(6),
-                              ),
-                              elevation: 0,
-                            ),
-                            child: const Text(
-                              'ADD',
-                              style: TextStyle(
-                                fontSize: 13,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
-                          const SizedBox(height: 2),
-                          Text(
-                            '2 options',
-                            style: TextStyle(
-                              fontSize: 10,
-                              color: Colors.green[700],
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 6),
                   // Weight/Variant with green circle
                   Row(
+                    mainAxisSize: MainAxisSize.min,
                     children: [
                       Container(
-                        width: 8,
-                        height: 8,
+                        width: 6,
+                        height: 6,
                         decoration: BoxDecoration(
                           color: Colors.green[600],
                           shape: BoxShape.circle,
                         ),
                       ),
-                      const SizedBox(width: 4),
-                      Text(
-                        product.defaultVariant.label,
-                        style: TextStyle(
-                          fontSize: 11,
-                          color: Colors.grey[600],
-                          fontWeight: FontWeight.w500,
+                      const SizedBox(width: 3),
+                      Flexible(
+                        child: Text(
+                          product.defaultVariant.label,
+                          style: TextStyle(
+                            fontSize: 10,
+                            color: Colors.grey[600],
+                            fontWeight: FontWeight.w500,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                         ),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 6),
+                  const SizedBox(height: 3),
                   // Product Name
                   Text(
                     product.name,
                     style: const TextStyle(
                       fontWeight: FontWeight.bold,
-                      fontSize: 14,
-                      height: 1.2,
+                      fontSize: 12,
+                      height: 1.15,
                     ),
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                   ),
-                  const SizedBox(height: 6),
+                  const SizedBox(height: 3),
                   // Rating Section
                   if (product.metrics?.rating != null)
                     _buildRatingWidget(product.metrics!.rating!),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 4),
                   // Availability (Only X left)
                   if (product.availability.availableQuantity > 0 &&
                       product.availability.availableQuantity <= 5)
                     Text(
                       'Only ${product.availability.availableQuantity} left',
                       style: TextStyle(
-                        fontSize: 11,
+                        fontSize: 9,
                         color: Colors.orange[700],
                         fontWeight: FontWeight.w500,
                       ),
                     ),
                   if (product.availability.availableQuantity > 0 &&
                       product.availability.availableQuantity <= 5)
-                    const SizedBox(height: 4),
-                  // Discount badge
+                    const SizedBox(height: 2),
+                  // Discount badge (green, not blue)
                   if (product.pricing.discountPercent > 0)
                     Text(
                       '${product.pricing.discountPercent}% OFF',
                       style: TextStyle(
-                        fontSize: 11,
-                        color: Colors.blue[700],
+                        fontSize: 9,
+                        color: Colors.green[700],
                         fontWeight: FontWeight.w600,
                       ),
                     ),
                   if (product.pricing.discountPercent > 0)
-                    const SizedBox(height: 4),
+                    const SizedBox(height: 2),
                   // Pricing Section
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.baseline,
-                    textBaseline: TextBaseline.alphabetic,
+                  Wrap(
+                    spacing: 4,
+                    runSpacing: 2,
+                    crossAxisAlignment: WrapCrossAlignment.center,
                     children: [
                       Text(
                         '₹${product.pricing.sellingPrice.toStringAsFixed(0)}',
                         style: const TextStyle(
-                          fontSize: 18,
+                          fontSize: 15,
                           fontWeight: FontWeight.bold,
                           color: Colors.black,
                         ),
                       ),
-                      const SizedBox(width: 6),
                       Text(
                         'MRP ₹${product.pricing.mrp.toStringAsFixed(0)}',
                         style: TextStyle(
-                          fontSize: 12,
+                          fontSize: 10,
                           decoration: TextDecoration.lineThrough,
                           color: Colors.grey[600],
                         ),
@@ -314,34 +269,38 @@ class ProductListingCard extends StatelessWidget {
               // Fully filled star
               return const Icon(
                 Icons.star,
-                size: 14,
+                size: 12,
                 color: Colors.amber,
               );
             } else if (starValue - rating.average < 1 && starValue - rating.average > 0) {
               // Partially filled star (half star)
               return const Icon(
                 Icons.star_half,
-                size: 14,
+                size: 12,
                 color: Colors.amber,
               );
             } else {
               // Empty star
               return const Icon(
                 Icons.star_border,
-                size: 14,
+                size: 12,
                 color: Colors.amber,
               );
             }
           }),
         ),
-        const SizedBox(width: 4),
+        const SizedBox(width: 3),
         // Rating value and count in brackets (e.g., "4.5 (8,490)")
-        Text(
-          '${rating.average.toStringAsFixed(1)} ${formatCount(rating.count)}',
-          style: TextStyle(
-            fontSize: 11,
-            color: Colors.grey[700],
-            fontWeight: FontWeight.w500,
+        Flexible(
+          child: Text(
+            '${rating.average.toStringAsFixed(1)} ${formatCount(rating.count)}',
+            style: TextStyle(
+              fontSize: 10,
+              color: Colors.grey[700],
+              fontWeight: FontWeight.w500,
+            ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
           ),
         ),
       ],
