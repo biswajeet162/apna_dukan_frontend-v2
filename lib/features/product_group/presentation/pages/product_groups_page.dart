@@ -249,7 +249,7 @@ class _ProductGroupsPageState extends State<ProductGroupsPage> {
     }
 
     return Container(
-      width: 100,
+      width: 80,
       decoration: BoxDecoration(
         color: Colors.grey[50],
         border: Border(
@@ -274,7 +274,7 @@ class _ProductGroupsPageState extends State<ProductGroupsPage> {
               _loadProducts(productGroup.productGroupId);
             },
             child: Container(
-              padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+              padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
               decoration: BoxDecoration(
                 color: isSelected ? Colors.white : Colors.transparent,
                 border: isSelected
@@ -287,8 +287,9 @@ class _ProductGroupsPageState extends State<ProductGroupsPage> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Container(
-                    width: 60,
-                    height: 60,
+                    width: 50,
+                    height: 50,
+                    padding: const EdgeInsets.all(2),
                     decoration: BoxDecoration(
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(8),
@@ -297,18 +298,18 @@ class _ProductGroupsPageState extends State<ProductGroupsPage> {
                         width: isSelected ? 2 : 1,
                       ),
                     ),
-                    child: imageUrl != null
-                        ? ClipRRect(
-                            borderRadius: BorderRadius.circular(7),
-                            child: CachedNetworkImage(
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(6),
+                      child: imageUrl != null
+                          ? CachedNetworkImage(
                               imageUrl: imageUrl,
                               fit: BoxFit.cover,
                               placeholder: (context, url) => Container(
                                 color: Colors.grey[200],
                                 child: const Center(
                                   child: SizedBox(
-                                    width: 20,
-                                    height: 20,
+                                    width: 18,
+                                    height: 18,
                                     child: CircularProgressIndicator(strokeWidth: 2),
                                   ),
                                 ),
@@ -316,22 +317,22 @@ class _ProductGroupsPageState extends State<ProductGroupsPage> {
                               errorWidget: (context, url, error) => Icon(
                                 Icons.image_not_supported,
                                 color: Colors.grey[400],
-                                size: 24,
+                                size: 20,
                               ),
+                            )
+                          : Icon(
+                              Icons.category,
+                              color: Colors.grey[400],
+                              size: 24,
                             ),
-                          )
-                        : Icon(
-                            Icons.category,
-                            color: Colors.grey[400],
-                            size: 30,
-                          ),
+                    ),
                   ),
-                  const SizedBox(height: 6),
+                  const SizedBox(height: 5),
                   Text(
                     productGroup.name,
                     textAlign: TextAlign.center,
                     style: TextStyle(
-                      fontSize: 11,
+                      fontSize: 10,
                       fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
                       color: isSelected ? Colors.green[700] : Colors.grey[800],
                     ),
