@@ -301,7 +301,7 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
                           )),
                           const SizedBox(width: 4),
                           Text(
-                            '(${_formatCount(product.metrics!.rating!.count)})',
+                            '${product.metrics!.rating!.average.toStringAsFixed(1)} (${_formatCount(product.metrics!.rating!.count)})',
                             style: TextStyle(
                               fontSize: 12,
                               color: Colors.grey[700],
@@ -659,14 +659,6 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
   }
 
   String _formatCount(int count) {
-    if (count >= 100000) {
-      final lac = count / 100000;
-      return '${lac.toStringAsFixed(2)} lac';
-    } else if (count >= 1000) {
-      final thousands = count / 1000;
-      return '${thousands.toStringAsFixed(1)}K';
-    } else {
-      return count.toString();
-    }
+    return count.toString();
   }
 }
