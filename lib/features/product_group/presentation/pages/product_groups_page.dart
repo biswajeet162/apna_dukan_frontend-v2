@@ -152,7 +152,7 @@ class _ProductGroupsPageState extends State<ProductGroupsPage> {
 
   Widget _buildTopBar() {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
       decoration: BoxDecoration(
         color: Colors.green[700],
         boxShadow: [
@@ -167,23 +167,28 @@ class _ProductGroupsPageState extends State<ProductGroupsPage> {
         children: [
           IconButton(
             icon: const Icon(Icons.arrow_back, color: Colors.white),
+            padding: EdgeInsets.zero,
+            constraints: const BoxConstraints(),
             onPressed: () {
               // Navigate to home page which will reload layout, categories, and subcategories
               context.go(AppRoutes.home);
             },
           ),
+          const SizedBox(width: 8),
           Expanded(
             child: Text(
               widget.subCategoryName,
               style: const TextStyle(
                 color: Colors.white,
-                fontSize: 20,
+                fontSize: 18,
                 fontWeight: FontWeight.bold,
               ),
             ),
           ),
           IconButton(
             icon: const Icon(Icons.search, color: Colors.white),
+            padding: EdgeInsets.zero,
+            constraints: const BoxConstraints(),
             onPressed: () {
               context.push(AppRoutes.search);
             },
