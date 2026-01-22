@@ -1,18 +1,21 @@
-// Standalone Categories Page - /categories?subCategoryId=xxx&subCategoryName=xxx
+// Standalone Categories Page - /categories?subCategoryId=xxx&subCategoryName=xxx&productId=xxx
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import '../../../product_group/presentation/pages/product_groups_page.dart';
+import '../../../product/presentation/pages/product_details_page.dart';
 import '../../../../core/widgets/app_navbar.dart';
 import '../../../../app/routes.dart';
-import 'package:go_router/go_router.dart';
 
 class CategoriesStandalonePage extends StatefulWidget {
   final String? subCategoryId;
   final String? subCategoryName;
+  final String? productId;
 
   const CategoriesStandalonePage({
     super.key,
     this.subCategoryId,
     this.subCategoryName,
+    this.productId,
   });
 
   @override
@@ -22,6 +25,15 @@ class CategoriesStandalonePage extends StatefulWidget {
 class _CategoriesStandalonePageState extends State<CategoriesStandalonePage> {
   @override
   Widget build(BuildContext context) {
+    // If productId is present, show product details page
+    if (widget.productId != null && widget.productId!.isNotEmpty) {
+      return ProductDetailsPage(
+        productId: widget.productId!,
+        subCategoryId: widget.subCategoryId,
+        subCategoryName: widget.subCategoryName,
+      );
+    }
+
     // If no subCategoryId, show empty state
     if (widget.subCategoryId == null || widget.subCategoryId!.isEmpty) {
       return Scaffold(

@@ -24,7 +24,21 @@ class ProductListingCard extends StatelessWidget {
         children: [
           InkWell(
             onTap: () {
-              context.push(AppRoutes.productDetailsWithId(product.productId));
+              // Get current route parameters to preserve subCategoryId and subCategoryName
+              final currentUri = GoRouterState.of(context).uri;
+              final subCategoryId = currentUri.queryParameters['subCategoryId'];
+              final subCategoryName = currentUri.queryParameters['subCategoryName'];
+              
+              // Navigate to /categories with productId added
+              final uri = Uri(
+                path: AppRoutes.categories,
+                queryParameters: {
+                  if (subCategoryId != null) 'subCategoryId': subCategoryId,
+                  if (subCategoryName != null) 'subCategoryName': subCategoryName,
+                  'productId': product.productId,
+                },
+              );
+              context.go(uri.toString());
             },
             borderRadius: BorderRadius.circular(8),
             child: Column(

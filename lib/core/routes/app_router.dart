@@ -60,12 +60,13 @@ final GoRouter appRouter = GoRouter(
       },
     ),
 
-    // Categories route - /categories?subCategoryId=xxx&subCategoryName=xxx
+    // Categories route - /categories?subCategoryId=xxx&subCategoryName=xxx&productId=xxx
     GoRoute(
       path: AppRoutes.categories,
       builder: (context, state) {
         final subCategoryId = state.uri.queryParameters['subCategoryId'];
         final subCategoryNameEncoded = state.uri.queryParameters['subCategoryName'];
+        final productId = state.uri.queryParameters['productId'];
         // Decode the subCategoryName (handles +, &, etc.)
         final subCategoryName = subCategoryNameEncoded != null 
             ? Uri.decodeComponent(subCategoryNameEncoded) 
@@ -74,9 +75,11 @@ final GoRouter appRouter = GoRouter(
         // CategoriesPage will create ProductGroupsPage, making ONLY 2 API calls:
         // 1. Product Groups API (/v1/subCategory/{subCategoryId}/productGroups)
         // 2. Products API (/v1/productGroup/{productGroupId}/products)
+        // When productId is present, show ProductDetailsPage
         return CategoriesStandalonePage(
           subCategoryId: subCategoryId,
           subCategoryName: subCategoryName,
+          productId: productId,
         );
       },
     ),

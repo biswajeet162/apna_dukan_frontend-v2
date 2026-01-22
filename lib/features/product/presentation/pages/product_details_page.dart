@@ -1,17 +1,23 @@
 // Product Details Page
 // API CALL: Product Details API (/v1/product/{productId})
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../../../../di/service_locator.dart';
 import '../../data/models/product_details_model.dart';
 import '../../data/models/variant_model.dart';
+import '../../../../app/routes.dart';
 
 class ProductDetailsPage extends StatefulWidget {
   final String productId;
+  final String? subCategoryId;
+  final String? subCategoryName;
 
   const ProductDetailsPage({
     super.key,
     required this.productId,
+    this.subCategoryId,
+    this.subCategoryName,
   });
 
   @override
@@ -20,7 +26,7 @@ class ProductDetailsPage extends StatefulWidget {
 
 class _ProductDetailsPageState extends State<ProductDetailsPage> {
   ProductDetailsModel? _product;
-  VariantModel? _selectedVariant;
+  VariantDetailsModel? _selectedVariant;
   bool _isLoading = true;
   String? _errorMessage;
 
@@ -44,12 +50,9 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
 
       setState(() {
         _product = product;
-        // Select default variant or first variant
+        // Select first variant
         if (product.variants.isNotEmpty) {
-          _selectedVariant = product.variants.firstWhere(
-            (v) => v.isDefault,
-            orElse: () => product.variants.first,
-          );
+          _selectedVariant = product.variants.first;
         }
         _isLoading = false;
       });
@@ -61,10 +64,26 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
     }
   }
 
-  void _selectVariant(VariantModel variant) {
+  void _selectVariant(VariantDetailsModel variant) {
     setState(() {
       _selectedVariant = variant;
     });
+  }
+
+  void _handleBack() {
+    // Remove productId from URL and navigate back to categories page
+    if (widget.subCategoryId != null) {
+      final uri = Uri(
+        path: AppRoutes.categories,
+        queryParameters: {
+          'subCategoryId': widget.subCategoryId!,
+          if (widget.subCategoryName != null) 'subCategoryName': widget.subCategoryName!,
+        },
+      );
+      context.go(uri.toString());
+    } else {
+      context.pop();
+    }
   }
 
   void _addToCart() {
@@ -86,6 +105,10 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
         title: const Text('Product Details'),
         backgroundColor: Colors.green[700],
         foregroundColor: Colors.white,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: _handleBack,
+        ),
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
@@ -115,8 +138,7 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
 
   Widget _buildProductDetails() {
     final product = _product!;
-    final imageUrl = product.primaryImageUrl ?? 
-        (product.imageUrls.isNotEmpty ? product.imageUrls.first : null);
+    final imageUrl = product.images.primary;
 
     return SingleChildScrollView(
       child: Column(
@@ -181,14 +203,6 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
                   const SizedBox(height: 8),
                 ],
 
-                // Product Code
-                Text(
-                  'Code: ${product.code}',
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: Colors.grey[600],
-                  ),
-                ),
                 const SizedBox(height: 16),
 
                 // Description
@@ -229,7 +243,7 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
                     children: product.variants.map((variant) {
                       final isSelected = _selectedVariant?.variantId == variant.variantId;
                       return ChoiceChip(
-                        label: Text(variant.name ?? variant.sku ?? 'Variant ${variant.variantId}'),
+                        label: Text(variant.label),
                         selected: isSelected,
                         onSelected: (selected) {
                           if (selected) _selectVariant(variant);
@@ -242,6 +256,56 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
                       );
                     }).toList(),
                   ),
+                  // Show selected variant pricing
+                  if (_selectedVariant != null) ...[
+                    const SizedBox(height: 16),
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: Colors.grey[100],
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Price: ₹${_selectedVariant!.pricing.sellingPrice.toStringAsFixed(0)}',
+                            style: const TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          if (_selectedVariant!.pricing.mrp != _selectedVariant!.pricing.sellingPrice)
+                            Text(
+                              'MRP: ₹${_selectedVariant!.pricing.mrp.toStringAsFixed(0)}',
+                              style: TextStyle(
+                                fontSize: 14,
+                                decoration: TextDecoration.lineThrough,
+                                color: Colors.grey[600],
+                              ),
+                            ),
+                          if (_selectedVariant!.pricing.discountPercent > 0)
+                            Text(
+                              '${_selectedVariant!.pricing.discountPercent}% OFF',
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: Colors.green[700],
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          if (!_selectedVariant!.availability.inStock)
+                            Text(
+                              'Out of Stock',
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: Colors.red[700],
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                        ],
+                      ),
+                    ),
+                  ],
                   const SizedBox(height: 24),
                 ],
 
