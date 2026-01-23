@@ -35,6 +35,7 @@ import '../../features/cms/presentation/terms_conditions_page.dart';
 import '../../features/cms/presentation/privacy_policy_page.dart';
 import '../../features/admin/presentation/pages/admin_dashboard_page.dart';
 import '../../features/admin/presentation/pages/layout_edit_page.dart';
+import '../../features/admin/presentation/pages/category_edit_page.dart';
 
 final GoRouter appRouter = GoRouter(
   initialLocation: AppRoutes.home,
@@ -311,6 +312,13 @@ final GoRouter appRouter = GoRouter(
       builder: (context, state) {
         final sectionId = state.pathParameters['sectionId']!;
         return LayoutEditPage(sectionId: sectionId);
+      },
+    ),
+    GoRoute(
+      path: AppRoutes.adminCategoryEdit,
+      builder: (context, state) {
+        final categoryId = state.pathParameters['categoryId']!;
+        return CategoryEditPage(categoryId: categoryId);
       },
     ),
   ],

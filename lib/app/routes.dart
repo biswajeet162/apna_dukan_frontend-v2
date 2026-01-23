@@ -86,6 +86,8 @@ class AppRoutes {
   static const String adminDashboardProductGroup = '/admin/dashboard/product-group';
   static const String adminLayoutEdit = '/admin/dashboard/layout/:sectionId';
   static String adminLayoutEditWithId(String sectionId) => '/admin/dashboard/layout/$sectionId';
+  static const String adminCategoryEdit = '/admin/dashboard/category/:categoryId';
+  static String adminCategoryEditWithId(String categoryId) => '/admin/dashboard/category/$categoryId';
 }
 
 

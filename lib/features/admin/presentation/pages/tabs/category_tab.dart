@@ -5,6 +5,7 @@ import '../../../../../../app/routes.dart';
 import '../../../../catalog_layout/domain/models/catalog_section.dart';
 import '../../../../category/data/models/category_admin_model.dart';
 import '../../../../category/data/models/category_section_admin_response.dart';
+import '../widgets/add_category_modal.dart';
 
 class CategoryTab extends StatefulWidget {
   const CategoryTab({super.key});
@@ -390,15 +391,18 @@ class _CategoryTabState extends State<CategoryTab> with AutomaticKeepAliveClient
                 ),
               )
             else
-              ReorderableListView.builder(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                itemCount: categories.length,
-                onReorder: (oldIndex, newIndex) => _handleReorder(section.sectionId, oldIndex, newIndex),
-                itemBuilder: (context, index) {
-                  final category = categories[index];
-                  return _buildCategoryItem(category, index, section.sectionId);
-                },
+              Padding(
+                padding: const EdgeInsets.only(left: 16),
+                child: ReorderableListView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemCount: categories.length,
+                  onReorder: (oldIndex, newIndex) => _handleReorder(section.sectionId, oldIndex, newIndex),
+                  itemBuilder: (context, index) {
+                    final category = categories[index];
+                    return _buildCategoryItem(category, index, section.sectionId);
+                  },
+                ),
               ),
           ],
         ),
@@ -500,20 +504,24 @@ class _CategoryTabState extends State<CategoryTab> with AutomaticKeepAliveClient
     );
   }
 
-  void _onCategoryTap(CategoryAdminModel category) {
-    // TODO: Navigate to category edit page
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Category detail view coming soon for: ${category.name}'),
-      ),
-    );
+  void _onCategoryTap(CategoryAdminModel category) async {
+    final result = await context.push<bool>(AppRoutes.adminCategoryEditWithId(category.categoryId));
+    // If category was updated or deleted, refresh the list
+    if (result == true) {
+      await _loadCategoriesForSection(category.sectionId, expand: true);
+    }
   }
 
   void _showAddCategoryModal(CatalogSection section) {
-    // TODO: Show add category modal
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Add category modal coming soon for section: ${section.title}'),
+    final categories = _categoriesBySection[section.sectionId] ?? [];
+    showDialog(
+      context: context,
+      builder: (context) => AddCategoryModal(
+        section: section,
+        existingCategories: categories,
+        onSuccess: () async {
+          await _loadCategoriesForSection(section.sectionId, expand: true);
+        },
       ),
     );
   }
