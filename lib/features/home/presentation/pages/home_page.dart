@@ -349,6 +349,8 @@ class _HomeContentState extends State<HomeContent> {
                   const SizedBox(width: 8),
                   GestureDetector(
                     onTap: () {
+                      // Always navigate to profile page
+                      // Profile page will show login prompt if not authenticated
                       context.go(AppRoutes.profile);
                     },
                     child: Icon(Icons.person, size: 28, color: Colors.white),

@@ -9,6 +9,7 @@ import '../domain/usecases/get_user_profile_usecase.dart';
 import '../domain/usecases/get_user_addresses_usecase.dart';
 import '../../../../core/network/dio_client.dart';
 import '../../../../core/constants/api_endpoints.dart';
+import '../../../../core/widgets/login_prompt_widget.dart';
 import 'package:dio/dio.dart';
 
 class ProfilePage extends StatefulWidget {
@@ -22,13 +23,31 @@ class _ProfilePageState extends State<ProfilePage> {
   UserProfileResponse? _userProfile;
   List<AddressResponse> _addresses = [];
   bool _isLoading = true;
+  bool _isCheckingAuth = true;
+  bool _isAuthenticated = false;
   String? _errorMessage;
   final AuthService _authService = AuthService(ServiceLocator().secureStorage);
 
   @override
   void initState() {
     super.initState();
-    _loadProfileData();
+    _checkAuthentication();
+  }
+
+  Future<void> _checkAuthentication() async {
+    final isAuthenticated = await _authService.isAuthenticated();
+    setState(() {
+      _isAuthenticated = isAuthenticated;
+      _isCheckingAuth = false;
+    });
+
+    if (isAuthenticated) {
+      _loadProfileData();
+    } else {
+      setState(() {
+        _isLoading = false;
+      });
+    }
   }
 
   Future<void> _loadProfileData() async {
@@ -121,28 +140,38 @@ class _ProfilePageState extends State<ProfilePage> {
         backgroundColor: Colors.green[700],
         foregroundColor: Colors.white,
       ),
-      body: _isLoading
+      body: _isCheckingAuth
           ? const Center(child: CircularProgressIndicator())
-          : _errorMessage != null
-              ? Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        _errorMessage!,
-                        style: TextStyle(color: Colors.red[700]),
-                        textAlign: TextAlign.center,
-                      ),
-                      const SizedBox(height: 16),
-                      ElevatedButton(
-                        onPressed: _loadProfileData,
-                        child: const Text('Retry'),
-                      ),
-                    ],
-                  ),
+          : !_isAuthenticated
+              ? const LoginPromptWidget(
+                  title: 'Login Required',
+                  message: 'Please login to view your profile',
+                  icon: Icons.person_outline,
                 )
-              : RefreshIndicator(
-                  onRefresh: _loadProfileData,
+              : _isLoading
+                  ? const Center(child: CircularProgressIndicator())
+                  : _errorMessage != null
+                      ? Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                _errorMessage!,
+                                style: TextStyle(color: Colors.red[700]),
+                                textAlign: TextAlign.center,
+                              ),
+                              const SizedBox(height: 16),
+                              ElevatedButton(
+                                onPressed: _loadProfileData,
+                                child: const Text('Retry'),
+                              ),
+                            ],
+                          ),
+                        )
+                      : RefreshIndicator(
+                  onRefresh: () async {
+                    await _loadProfileData();
+                  },
                   child: SingleChildScrollView(
                     physics: const AlwaysScrollableScrollPhysics(),
                     padding: const EdgeInsets.all(16),

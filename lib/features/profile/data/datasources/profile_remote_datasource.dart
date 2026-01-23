@@ -12,6 +12,8 @@ class ProfileRemoteDataSource {
 
   Future<UserProfileResponse> getUserProfile() async {
     try {
+      // Endpoint: GET /api/user/profile
+      // Token is automatically added by AuthInterceptor if user is logged in
       final response = await _dioClient.dio.get('/user/profile');
 
       if (response.statusCode == 200) {
@@ -21,15 +23,30 @@ class ProfileRemoteDataSource {
       }
     } on DioException catch (e) {
       if (e.response?.statusCode == 401) {
+        // Token missing, invalid, or expired
+        final errorData = e.response?.data;
+        if (errorData is Map && errorData.containsKey('message')) {
+          throw Exception(errorData['message'] as String);
+        }
         throw Exception('Unauthorized. Please login again.');
+      } else if (e.response?.statusCode == 403) {
+        throw Exception('Access denied. You don\'t have permission.');
+      } else if (e.response != null) {
+        final errorData = e.response?.data;
+        if (errorData is Map && errorData.containsKey('message')) {
+          throw Exception(errorData['message'] as String);
+        }
+        throw Exception('Error fetching profile: ${e.response?.statusCode}');
       } else {
-        throw Exception('Error fetching profile: ${e.message}');
+        throw Exception('Network error. Please check your connection.');
       }
     }
   }
 
   Future<List<AddressResponse>> getUserAddresses() async {
     try {
+      // Endpoint: GET /api/user/addresses
+      // Token is automatically added by AuthInterceptor if user is logged in
       final response = await _dioClient.dio.get('/user/addresses');
 
       if (response.statusCode == 200) {
@@ -42,9 +59,22 @@ class ProfileRemoteDataSource {
       }
     } on DioException catch (e) {
       if (e.response?.statusCode == 401) {
+        // Token missing, invalid, or expired
+        final errorData = e.response?.data;
+        if (errorData is Map && errorData.containsKey('message')) {
+          throw Exception(errorData['message'] as String);
+        }
         throw Exception('Unauthorized. Please login again.');
+      } else if (e.response?.statusCode == 403) {
+        throw Exception('Access denied. You don\'t have permission.');
+      } else if (e.response != null) {
+        final errorData = e.response?.data;
+        if (errorData is Map && errorData.containsKey('message')) {
+          throw Exception(errorData['message'] as String);
+        }
+        throw Exception('Error fetching addresses: ${e.response?.statusCode}');
       } else {
-        throw Exception('Error fetching addresses: ${e.message}');
+        throw Exception('Network error. Please check your connection.');
       }
     }
   }
