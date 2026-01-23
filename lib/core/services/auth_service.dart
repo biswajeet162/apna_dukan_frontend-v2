@@ -10,15 +10,29 @@ class AuthService {
 
   // Save authentication data
   Future<void> saveAuthData(AuthResponse response) async {
+    // Save tokens first (most critical)
     await _secureStorage.saveTokens(
       accessToken: response.accessToken,
       refreshToken: response.refreshToken,
     );
+    
+    // Then save user data
     await _secureStorage.saveUserId(response.userId);
     if (response.email != null) {
       await _secureStorage.saveUserEmail(response.email!);
     }
     await _secureStorage.saveUserRole(response.role);
+    
+    // Verify all data is saved
+    final savedAccessToken = await _secureStorage.getAccessToken();
+    final savedRefreshToken = await _secureStorage.getRefreshToken();
+    final savedUserId = await _secureStorage.getUserId();
+    
+    if (savedAccessToken != response.accessToken || 
+        savedRefreshToken != response.refreshToken ||
+        savedUserId != response.userId) {
+      throw Exception('Failed to save authentication data correctly');
+    }
   }
 
   // Update tokens after refresh

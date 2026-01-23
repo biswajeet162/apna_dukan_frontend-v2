@@ -17,20 +17,26 @@ class AuthInterceptor extends Interceptor {
     if (options.path.contains('/auth/login') || 
         options.path.contains('/auth/register') ||
         options.path.contains('/auth/token/refresh')) {
-      return super.onRequest(options, handler);
+      handler.next(options);
+      return;
     }
 
     // Add authentication token if available
-    final isLoggedIn = await _secureStorage.isLoggedIn();
-    if (isLoggedIn) {
-      final token = await _secureStorage.getAccessToken();
-      if (token != null && token.isNotEmpty) {
-        options.headers['Authorization'] = 'Bearer $token';
+    try {
+      final isLoggedIn = await _secureStorage.isLoggedIn();
+      if (isLoggedIn) {
+        final token = await _secureStorage.getAccessToken();
+        if (token != null && token.isNotEmpty) {
+          options.headers['Authorization'] = 'Bearer $token';
+        }
       }
+    } catch (e) {
+      // If there's an error reading tokens, log it but don't block the request
+      print('Error reading auth token: $e');
     }
     // If not logged in, don't add header (allows anonymous access to public APIs)
     
-    super.onRequest(options, handler);
+    handler.next(options);
   }
 
   @override

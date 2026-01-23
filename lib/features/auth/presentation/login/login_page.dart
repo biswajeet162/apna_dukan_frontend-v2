@@ -62,6 +62,8 @@ class _LoginPageState extends State<LoginPage> {
     });
 
     try {
+      // STEP 1: Call Login API
+      print('🔐 Step 1: Calling login API...');
       final loginRequest = LoginRequest(
         emailOrPhone: _emailOrPhoneController.text.trim(),
         password: _passwordController.text,
@@ -69,16 +71,48 @@ class _LoginPageState extends State<LoginPage> {
 
       final loginUseCase = ServiceLocator().loginUseCase;
       final authResponse = await loginUseCase.call(loginRequest);
+      print('✅ Step 1: Login API call successful');
 
-      // Save auth data
+      // STEP 2: Validate response has required fields
+      print('🔍 Step 2: Validating response...');
+      if (authResponse.accessToken.isEmpty || authResponse.refreshToken.isEmpty) {
+        throw Exception('Invalid response: missing authentication tokens');
+      }
+      print('✅ Step 2: Response validation passed');
+
+      // STEP 3: Save auth data to secure storage (cookies)
+      print('💾 Step 3: Saving auth data to secure storage...');
       final authService = AuthService(ServiceLocator().secureStorage);
       await authService.saveAuthData(authResponse);
+      print('✅ Step 3: Auth data saved to secure storage');
 
-      // Navigate to home
+      // STEP 4: Verify tokens are saved and readable
+      print('🔐 Step 4: Verifying tokens are saved...');
+      final savedToken = await authService.getToken();
+      final savedRefreshToken = await authService.getRefreshToken();
+      
+      if (savedToken == null || savedToken.isEmpty) {
+        throw Exception('Failed to save access token');
+      }
+      if (savedRefreshToken == null || savedRefreshToken.isEmpty) {
+        throw Exception('Failed to save refresh token');
+      }
+      print('✅ Step 4: Tokens verified - accessToken: ${savedToken.substring(0, 20)}..., refreshToken: ${savedRefreshToken.substring(0, 20)}...');
+
+      // STEP 5: Ensure storage write is fully persisted
+      print('⏳ Step 5: Ensuring storage persistence...');
+      await Future.delayed(const Duration(milliseconds: 200));
+      print('✅ Step 5: Storage persistence confirmed');
+
+      // STEP 6: Navigate to home (only after all steps complete)
+      print('🏠 Step 6: Navigating to home page...');
       if (mounted) {
         context.go(AppRoutes.home);
+        print('✅ Step 6: Navigation complete');
       }
-    } catch (e) {
+    } catch (e, stackTrace) {
+      print('❌ Login error: $e');
+      print('Stack trace: $stackTrace');
       _setErrorMessage(e.toString().replaceAll('Exception: ', ''));
       setState(() {
         _isLoading = false;

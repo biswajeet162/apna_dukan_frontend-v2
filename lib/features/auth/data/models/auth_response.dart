@@ -21,16 +21,22 @@ class AuthResponse {
   });
 
   factory AuthResponse.fromJson(Map<String, dynamic> json) {
-    return AuthResponse(
-      accessToken: json['accessToken'] as String,
-      refreshToken: json['refreshToken'] as String,
-      type: json['type'] as String? ?? 'Bearer',
-      userId: json['userId']?.toString() ?? json['userId'] as String,
-      name: json['name'] as String,
-      email: json['email'] as String?,
-      phone: json['phone'] as String?,
-      role: json['role']?.toString() ?? json['role'] as String,
-    );
+    try {
+      return AuthResponse(
+        accessToken: json['accessToken']?.toString() ?? '',
+        refreshToken: json['refreshToken']?.toString() ?? '',
+        type: json['type']?.toString() ?? 'Bearer',
+        userId: json['userId']?.toString() ?? '',
+        name: json['name']?.toString() ?? '',
+        email: json['email']?.toString(),
+        phone: json['phone']?.toString(),
+        role: json['role']?.toString() ?? '',
+      );
+    } catch (e) {
+      print('Error parsing AuthResponse: $e');
+      print('JSON data: $json');
+      rethrow;
+    }
   }
 
   Map<String, dynamic> toJson() {

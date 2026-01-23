@@ -21,7 +21,19 @@ class AuthRemoteDataSource {
       );
 
       if (response.statusCode == 200) {
-        return AuthResponse.fromJson(response.data as Map<String, dynamic>);
+        try {
+          final responseData = response.data;
+          if (responseData is! Map<String, dynamic>) {
+            print('Unexpected response type: ${responseData.runtimeType}');
+            print('Response data: $responseData');
+            throw Exception('Invalid response format from server');
+          }
+          return AuthResponse.fromJson(responseData);
+        } catch (e) {
+          print('Error parsing login response: $e');
+          print('Response data: ${response.data}');
+          rethrow;
+        }
       } else {
         throw Exception('Failed to login');
       }
@@ -64,7 +76,19 @@ class AuthRemoteDataSource {
       );
 
       if (response.statusCode == 200 || response.statusCode == 201) {
-        return AuthResponse.fromJson(response.data as Map<String, dynamic>);
+        try {
+          final responseData = response.data;
+          if (responseData is! Map<String, dynamic>) {
+            print('Unexpected response type: ${responseData.runtimeType}');
+            print('Response data: $responseData');
+            throw Exception('Invalid response format from server');
+          }
+          return AuthResponse.fromJson(responseData);
+        } catch (e) {
+          print('Error parsing signup response: $e');
+          print('Response data: ${response.data}');
+          rethrow;
+        }
       } else {
         throw Exception('Failed to sign up');
       }
