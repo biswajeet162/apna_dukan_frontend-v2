@@ -1,6 +1,7 @@
 // Auth Service
 import '../storage/secure_storage.dart';
 import '../../features/auth/data/models/auth_response.dart';
+import '../../features/auth/data/models/refresh_token_response.dart';
 
 class AuthService {
   final SecureStorage _secureStorage;
@@ -9,15 +10,33 @@ class AuthService {
 
   // Save authentication data
   Future<void> saveAuthData(AuthResponse response) async {
-    await _secureStorage.saveToken(response.token);
-    await _secureStorage.saveUserId(response.id);
-    await _secureStorage.saveUserEmail(response.email);
+    await _secureStorage.saveTokens(
+      accessToken: response.accessToken,
+      refreshToken: response.refreshToken,
+    );
+    await _secureStorage.saveUserId(response.userId);
+    if (response.email != null) {
+      await _secureStorage.saveUserEmail(response.email!);
+    }
     await _secureStorage.saveUserRole(response.role);
   }
 
-  // Get authentication token
+  // Update tokens after refresh
+  Future<void> updateTokens(RefreshTokenResponse response) async {
+    await _secureStorage.updateTokens(
+      accessToken: response.accessToken,
+      refreshToken: response.refreshToken,
+    );
+  }
+
+  // Get authentication token (access token)
   Future<String?> getToken() async {
-    return await _secureStorage.getToken();
+    return await _secureStorage.getAccessToken();
+  }
+
+  // Get refresh token
+  Future<String?> getRefreshToken() async {
+    return await _secureStorage.getRefreshToken();
   }
 
   // Get user ID
@@ -37,14 +56,13 @@ class AuthService {
 
   // Check if user is authenticated
   Future<bool> isAuthenticated() async {
-    final token = await getToken();
-    return token != null && token.isNotEmpty;
+    return await _secureStorage.isLoggedIn();
   }
 
   // Check if user is admin
   Future<bool> isAdmin() async {
     final role = await getUserRole();
-    return role == 'ADMIN_ROLE';
+    return role == 'ADMIN' || role == 'ROLE_ADMIN';
   }
 
   // Logout - clear all auth data

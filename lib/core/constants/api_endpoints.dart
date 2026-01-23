@@ -9,8 +9,10 @@ class ApiEndpoints {
   static const String productDetails = '/v1/product/{productId}';
 
   // Auth endpoints
-  static const String login = '/v1/auth/login';
-  static const String signup = '/v1/auth/signup';
+  static const String login = '/auth/login';
+  static const String signup = '/auth/register';
+  static const String refreshToken = '/auth/token/refresh';
+  static const String logout = '/auth/logout';
 
   // Helper methods
   static String categoriesForSectionUrl(String sectionId) {

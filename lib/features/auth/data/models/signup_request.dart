@@ -1,27 +1,26 @@
 // Signup Request Model
 class SignupRequest {
-  final String firstName;
-  final String lastName;
-  final String phone;
-  final String email;
+  final String name;
+  final String? email;
+  final String? phone;
   final String password;
 
   SignupRequest({
-    required this.firstName,
-    required this.lastName,
-    required this.phone,
-    required this.email,
+    required this.name,
+    this.email,
+    this.phone,
     required this.password,
   });
 
   Map<String, dynamic> toJson() {
     return {
-      'firstName': firstName,
-      'lastName': lastName,
-      'phone': phone,
-      'email': email,
+      'name': name,
+      if (email != null && email!.isNotEmpty) 'email': email,
+      if (phone != null && phone!.isNotEmpty) 'phone': phone,
       'password': password,
     };
   }
 }
+
+
 
