@@ -50,7 +50,7 @@ class LoginPromptWidget extends StatelessWidget {
             const SizedBox(height: 32),
             ElevatedButton(
               onPressed: () {
-                context.push(AppRoutes.login);
+                context.go(AppRoutes.login);
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.green[700],

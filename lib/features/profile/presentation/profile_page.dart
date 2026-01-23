@@ -10,6 +10,7 @@ import '../domain/usecases/get_user_addresses_usecase.dart';
 import '../../../../core/network/dio_client.dart';
 import '../../../../core/constants/api_endpoints.dart';
 import '../../../../core/widgets/login_prompt_widget.dart';
+import '../../../../core/widgets/app_navbar.dart';
 import 'package:dio/dio.dart';
 
 class ProfilePage extends StatefulWidget {
@@ -25,6 +26,8 @@ class _ProfilePageState extends State<ProfilePage> {
   bool _isLoading = true;
   bool _isCheckingAuth = true;
   bool _isAuthenticated = false;
+  bool _isAdmin = false;
+  bool _isLoadingAdmin = true;
   String? _errorMessage;
   final AuthService _authService = AuthService(ServiceLocator().secureStorage);
 
@@ -41,12 +44,41 @@ class _ProfilePageState extends State<ProfilePage> {
       _isCheckingAuth = false;
     });
 
+    // Always check admin status to show correct tabs (even if not authenticated)
+    await _checkAdminStatus();
+
     if (isAuthenticated) {
       _loadProfileData();
     } else {
       setState(() {
         _isLoading = false;
       });
+    }
+  }
+
+  Future<void> _checkAdminStatus() async {
+    final isAdmin = await _authService.isAdmin();
+    setState(() {
+      _isAdmin = isAdmin;
+      _isLoadingAdmin = false;
+    });
+  }
+
+  void _onNavTap(int index) {
+    switch (index) {
+      case 0:
+        context.go(AppRoutes.home);
+        break;
+      case 1:
+        context.go(AppRoutes.categories);
+        break;
+      case 2:
+        context.go(AppRoutes.orders);
+        break;
+      case 3:
+        // Dashboard button (only visible for admin)
+        context.go(AppRoutes.adminDashboard);
+        break;
     }
   }
 
@@ -139,6 +171,12 @@ class _ProfilePageState extends State<ProfilePage> {
         title: const Text('Profile'),
         backgroundColor: Colors.green[700],
         foregroundColor: Colors.white,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () {
+            context.go(AppRoutes.home);
+          },
+        ),
       ),
       body: _isCheckingAuth
           ? const Center(child: CircularProgressIndicator())
@@ -193,6 +231,13 @@ class _ProfilePageState extends State<ProfilePage> {
                     ),
                   ),
                 ),
+      bottomNavigationBar: _isLoadingAdmin
+          ? null
+          : AppNavbar(
+              currentIndex: 0, // Default to home tab (profile is not a tab)
+              onTap: _onNavTap,
+              isAdmin: _isAdmin,
+            ),
     );
   }
 

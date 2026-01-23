@@ -39,13 +39,8 @@ class _OrderListPageState extends State<OrderListPage> {
       _isCheckingAuth = false;
     });
 
-    if (isAuthenticated) {
-      _checkAdminStatus();
-    } else {
-      setState(() {
-        _isLoadingAdmin = false;
-      });
-    }
+    // Always check admin status to show correct tabs (even if not authenticated)
+    await _checkAdminStatus();
   }
 
   Future<void> _checkAdminStatus() async {
@@ -81,6 +76,12 @@ class _OrderListPageState extends State<OrderListPage> {
         title: const Text('My Orders'),
         backgroundColor: Colors.green[700],
         foregroundColor: Colors.white,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () {
+            context.go(AppRoutes.home);
+          },
+        ),
       ),
       body: _isCheckingAuth
           ? const Center(child: CircularProgressIndicator())
@@ -108,7 +109,7 @@ class _OrderListPageState extends State<OrderListPage> {
                     ],
                   ),
                 ),
-      bottomNavigationBar: _isLoadingAdmin || !_isAuthenticated
+      bottomNavigationBar: _isLoadingAdmin
           ? null
           : AppNavbar(
               currentIndex: 2, // Orders tab
