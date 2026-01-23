@@ -90,7 +90,7 @@ class _HomeContentState extends State<HomeContent> {
       });
 
       // API CALL #1: Load Catalog Layout
-      final sections = await ServiceLocator().getCatalogLayoutUseCase();
+      final sections = await ServiceLocator().getCatalogLayoutUseCase.call();
       
       setState(() {
         _catalogSections = sections;
@@ -124,7 +124,7 @@ class _HomeContentState extends State<HomeContent> {
       });
 
       // API CALL #2: Load Categories
-      final categoryResponse = await ServiceLocator().getCategoriesUseCase(sectionId);
+      final categoryResponse = await ServiceLocator().getCategoriesUseCase.call(sectionId);
       
       setState(() {
         _categorySectionResponse = categoryResponse;
@@ -149,7 +149,7 @@ class _HomeContentState extends State<HomeContent> {
         _loadingSubCategories[categoryId] = true;
       });
 
-      final subCategoryResponse = await ServiceLocator().getSubCategoriesUseCase(categoryId);
+      final subCategoryResponse = await ServiceLocator().getSubCategoriesUseCase.call(categoryId);
       
       setState(() {
         _subCategoriesMap[categoryId] = subCategoryResponse;
