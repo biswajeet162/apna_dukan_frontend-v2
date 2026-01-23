@@ -12,6 +12,12 @@ class ApiEndpoints {
   static const String adminCatalogLayout = '/admin/catalog/layout';
   static const String adminCatalogLayoutBulk = '/admin/catalog/layout/bulk';
   static String adminCatalogLayoutById(String sectionId) => '/admin/catalog/layout/$sectionId';
+  
+  // Admin category endpoints
+  static String adminCategoriesForSection(String sectionId) => '/v1/admin/section/$sectionId/categories';
+  static String adminCategoryById(String categoryId) => '/v1/admin/category/$categoryId';
+  static const String adminCategoryCreate = '/v1/admin/category';
+  static const String adminCategoryBulk = '/v1/admin/category/bulk';
 
   // Auth endpoints
   static const String login = '/auth/login';
