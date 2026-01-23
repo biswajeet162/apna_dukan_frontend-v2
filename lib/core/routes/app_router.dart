@@ -34,6 +34,7 @@ import '../../features/cms/presentation/about_us_page.dart';
 import '../../features/cms/presentation/terms_conditions_page.dart';
 import '../../features/cms/presentation/privacy_policy_page.dart';
 import '../../features/admin/presentation/pages/admin_dashboard_page.dart';
+import '../../features/admin/presentation/pages/layout_edit_page.dart';
 
 final GoRouter appRouter = GoRouter(
   initialLocation: AppRoutes.home,
@@ -304,6 +305,13 @@ final GoRouter appRouter = GoRouter(
     GoRoute(
       path: AppRoutes.adminDashboardProductGroup,
       builder: (context, state) => const AdminDashboardPage(tab: 'product-group'),
+    ),
+    GoRoute(
+      path: AppRoutes.adminLayoutEdit,
+      builder: (context, state) {
+        final sectionId = state.pathParameters['sectionId']!;
+        return LayoutEditPage(sectionId: sectionId);
+      },
     ),
   ],
   errorBuilder: (context, state) => const HomePage(),

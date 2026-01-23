@@ -10,6 +10,7 @@ class ApiEndpoints {
 
   // Admin endpoints
   static const String adminCatalogLayout = '/admin/catalog/layout';
+  static String adminCatalogLayoutById(String sectionId) => '/admin/catalog/layout/$sectionId';
 
   // Auth endpoints
   static const String login = '/auth/login';

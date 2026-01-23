@@ -42,6 +42,42 @@ class CatalogLayoutRemoteDataSource {
       throw Exception('Error fetching catalog sections: ${e.message}');
     }
   }
+
+  Future<CatalogSection> getCatalogSectionById(String sectionId) async {
+    try {
+      final response = await _dioClient.dio.get(
+        ApiEndpoints.adminCatalogLayoutById(sectionId),
+      );
+
+      if (response.statusCode == 200) {
+        return CatalogSection.fromJson(response.data as Map<String, dynamic>);
+      } else {
+        throw Exception('Failed to load catalog section');
+      }
+    } on DioException catch (e) {
+      throw Exception('Error fetching catalog section: ${e.message}');
+    }
+  }
+
+  Future<CatalogSection> updateCatalogSection(
+    String sectionId,
+    Map<String, dynamic> updateData,
+  ) async {
+    try {
+      final response = await _dioClient.dio.put(
+        ApiEndpoints.adminCatalogLayoutById(sectionId),
+        data: updateData,
+      );
+
+      if (response.statusCode == 200) {
+        return CatalogSection.fromJson(response.data as Map<String, dynamic>);
+      } else {
+        throw Exception('Failed to update catalog section');
+      }
+    } on DioException catch (e) {
+      throw Exception('Error updating catalog section: ${e.message}');
+    }
+  }
 }
 
 

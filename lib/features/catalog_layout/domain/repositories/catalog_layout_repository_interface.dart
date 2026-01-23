@@ -4,6 +4,8 @@ import '../models/catalog_section.dart';
 abstract class CatalogLayoutRepositoryInterface {
   Future<List<CatalogSection>> getEnabledCatalogSections();
   Future<List<CatalogSection>> getAllCatalogSectionsForAdmin();
+  Future<CatalogSection> getCatalogSectionById(String sectionId);
+  Future<CatalogSection> updateCatalogSection(String sectionId, Map<String, dynamic> updateData);
 }
 
 

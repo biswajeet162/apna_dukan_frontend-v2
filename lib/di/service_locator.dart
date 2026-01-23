@@ -5,6 +5,8 @@ import '../features/catalog_layout/data/datasources/catalog_layout_remote_dataso
 import '../features/catalog_layout/data/repositories/catalog_layout_repository.dart';
 import '../features/catalog_layout/domain/usecases/get_catalog_layout_usecase.dart';
 import '../features/catalog_layout/domain/usecases/get_all_catalog_layouts_usecase.dart';
+import '../features/catalog_layout/domain/usecases/get_catalog_section_by_id_usecase.dart';
+import '../features/catalog_layout/domain/usecases/update_catalog_section_usecase.dart';
 import '../features/category/data/datasources/category_remote_datasource.dart';
 import '../features/category/data/repositories/category_repository.dart';
 import '../features/category/domain/usecases/get_categories_usecase.dart';
@@ -55,6 +57,8 @@ class ServiceLocator {
   // Use Cases
   late final GetCatalogLayoutUseCase _getCatalogLayoutUseCase;
   late final GetAllCatalogLayoutsUseCase _getAllCatalogLayoutsUseCase;
+  late final GetCatalogSectionByIdUseCase _getCatalogSectionByIdUseCase;
+  late final UpdateCatalogSectionUseCase _updateCatalogSectionUseCase;
   late final GetCategoriesUseCase _getCategoriesUseCase;
   late final GetSubCategoriesUseCase _getSubCategoriesUseCase;
   late final GetProductGroupsUseCase _getProductGroupsUseCase;
@@ -89,6 +93,8 @@ class ServiceLocator {
     // Initialize use cases
     _getCatalogLayoutUseCase = GetCatalogLayoutUseCase(_catalogLayoutRepository);
     _getAllCatalogLayoutsUseCase = GetAllCatalogLayoutsUseCase(_catalogLayoutRepository);
+    _getCatalogSectionByIdUseCase = GetCatalogSectionByIdUseCase(_catalogLayoutRepository);
+    _updateCatalogSectionUseCase = UpdateCatalogSectionUseCase(_catalogLayoutRepository);
     _getCategoriesUseCase = GetCategoriesUseCase(_categoryRepository);
     _getSubCategoriesUseCase = GetSubCategoriesUseCase(_subCategoryRepository);
     _getProductGroupsUseCase = GetProductGroupsUseCase(_productGroupRepository);
@@ -103,6 +109,8 @@ class ServiceLocator {
   ApiClient get apiClient => _apiClient;
   GetCatalogLayoutUseCase get getCatalogLayoutUseCase => _getCatalogLayoutUseCase;
   GetAllCatalogLayoutsUseCase get getAllCatalogLayoutsUseCase => _getAllCatalogLayoutsUseCase;
+  GetCatalogSectionByIdUseCase get getCatalogSectionByIdUseCase => _getCatalogSectionByIdUseCase;
+  UpdateCatalogSectionUseCase get updateCatalogSectionUseCase => _updateCatalogSectionUseCase;
   GetCategoriesUseCase get getCategoriesUseCase => _getCategoriesUseCase;
   GetSubCategoriesUseCase get getSubCategoriesUseCase => _getSubCategoriesUseCase;
   GetProductGroupsUseCase get getProductGroupsUseCase => _getProductGroupsUseCase;

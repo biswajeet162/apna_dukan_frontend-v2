@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import '../../../../../../di/service_locator.dart';
+import '../../../../../../app/routes.dart';
 import '../../../../catalog_layout/domain/models/catalog_section.dart';
 
 class LayoutTab extends StatefulWidget {
@@ -71,13 +73,12 @@ class _LayoutTabState extends State<LayoutTab> with AutomaticKeepAliveClientMixi
     }
   }
 
-  void _onLayoutTap(CatalogSection layout) {
-    // TODO: Navigate to layout detail/edit page
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Layout detail view coming soon for: ${layout.title}'),
-      ),
-    );
+  void _onLayoutTap(CatalogSection layout) async {
+    final result = await context.push<bool>(AppRoutes.adminLayoutEditWithId(layout.sectionId));
+    // If layout was updated, refresh the list
+    if (result == true) {
+      _loadLayouts(forceRefresh: true);
+    }
   }
 
   @override
