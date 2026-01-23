@@ -27,5 +27,15 @@ class CatalogLayoutRepository implements CatalogLayoutRepositoryInterface {
   Future<CatalogSection> updateCatalogSection(String sectionId, Map<String, dynamic> updateData) async {
     return await _remoteDataSource.updateCatalogSection(sectionId, updateData);
   }
+
+  @override
+  Future<CatalogSection> createCatalogSection(Map<String, dynamic> createData) async {
+    return await _remoteDataSource.createCatalogSection(createData);
+  }
+
+  @override
+  Future<void> deleteCatalogSection(String sectionId) async {
+    return await _remoteDataSource.deleteCatalogSection(sectionId);
+  }
 }
 

@@ -7,6 +7,8 @@ import '../features/catalog_layout/domain/usecases/get_catalog_layout_usecase.da
 import '../features/catalog_layout/domain/usecases/get_all_catalog_layouts_usecase.dart';
 import '../features/catalog_layout/domain/usecases/get_catalog_section_by_id_usecase.dart';
 import '../features/catalog_layout/domain/usecases/update_catalog_section_usecase.dart';
+import '../features/catalog_layout/domain/usecases/create_catalog_section_usecase.dart';
+import '../features/catalog_layout/domain/usecases/delete_catalog_section_usecase.dart';
 import '../features/category/data/datasources/category_remote_datasource.dart';
 import '../features/category/data/repositories/category_repository.dart';
 import '../features/category/domain/usecases/get_categories_usecase.dart';
@@ -59,6 +61,8 @@ class ServiceLocator {
   late final GetAllCatalogLayoutsUseCase _getAllCatalogLayoutsUseCase;
   late final GetCatalogSectionByIdUseCase _getCatalogSectionByIdUseCase;
   late final UpdateCatalogSectionUseCase _updateCatalogSectionUseCase;
+  late final CreateCatalogSectionUseCase _createCatalogSectionUseCase;
+  late final DeleteCatalogSectionUseCase _deleteCatalogSectionUseCase;
   late final GetCategoriesUseCase _getCategoriesUseCase;
   late final GetSubCategoriesUseCase _getSubCategoriesUseCase;
   late final GetProductGroupsUseCase _getProductGroupsUseCase;
@@ -95,6 +99,8 @@ class ServiceLocator {
     _getAllCatalogLayoutsUseCase = GetAllCatalogLayoutsUseCase(_catalogLayoutRepository);
     _getCatalogSectionByIdUseCase = GetCatalogSectionByIdUseCase(_catalogLayoutRepository);
     _updateCatalogSectionUseCase = UpdateCatalogSectionUseCase(_catalogLayoutRepository);
+    _createCatalogSectionUseCase = CreateCatalogSectionUseCase(_catalogLayoutRepository);
+    _deleteCatalogSectionUseCase = DeleteCatalogSectionUseCase(_catalogLayoutRepository);
     _getCategoriesUseCase = GetCategoriesUseCase(_categoryRepository);
     _getSubCategoriesUseCase = GetSubCategoriesUseCase(_subCategoryRepository);
     _getProductGroupsUseCase = GetProductGroupsUseCase(_productGroupRepository);
@@ -111,6 +117,8 @@ class ServiceLocator {
   GetAllCatalogLayoutsUseCase get getAllCatalogLayoutsUseCase => _getAllCatalogLayoutsUseCase;
   GetCatalogSectionByIdUseCase get getCatalogSectionByIdUseCase => _getCatalogSectionByIdUseCase;
   UpdateCatalogSectionUseCase get updateCatalogSectionUseCase => _updateCatalogSectionUseCase;
+  CreateCatalogSectionUseCase get createCatalogSectionUseCase => _createCatalogSectionUseCase;
+  DeleteCatalogSectionUseCase get deleteCatalogSectionUseCase => _deleteCatalogSectionUseCase;
   GetCategoriesUseCase get getCategoriesUseCase => _getCategoriesUseCase;
   GetSubCategoriesUseCase get getSubCategoriesUseCase => _getSubCategoriesUseCase;
   GetProductGroupsUseCase get getProductGroupsUseCase => _getProductGroupsUseCase;

@@ -78,6 +78,37 @@ class CatalogLayoutRemoteDataSource {
       throw Exception('Error updating catalog section: ${e.message}');
     }
   }
+
+  Future<CatalogSection> createCatalogSection(Map<String, dynamic> createData) async {
+    try {
+      final response = await _dioClient.dio.post(
+        ApiEndpoints.adminCatalogLayout,
+        data: createData,
+      );
+
+      if (response.statusCode == 201) {
+        return CatalogSection.fromJson(response.data as Map<String, dynamic>);
+      } else {
+        throw Exception('Failed to create catalog section');
+      }
+    } on DioException catch (e) {
+      throw Exception('Error creating catalog section: ${e.message}');
+    }
+  }
+
+  Future<void> deleteCatalogSection(String sectionId) async {
+    try {
+      final response = await _dioClient.dio.delete(
+        ApiEndpoints.adminCatalogLayoutById(sectionId),
+      );
+
+      if (response.statusCode != 204) {
+        throw Exception('Failed to delete catalog section');
+      }
+    } on DioException catch (e) {
+      throw Exception('Error deleting catalog section: ${e.message}');
+    }
+  }
 }
 
 

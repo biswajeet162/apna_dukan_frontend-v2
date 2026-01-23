@@ -21,6 +21,7 @@ class _LayoutEditPageState extends State<LayoutEditPage> {
   CatalogSection? _layout;
   bool _isLoading = true;
   bool _isSaving = false;
+  bool _isDeleting = false;
   String? _errorMessage;
 
   // Form controllers
@@ -125,6 +126,69 @@ class _LayoutEditPageState extends State<LayoutEditPage> {
     }
   }
 
+  Future<void> _deleteLayout() async {
+    if (_layout == null) return;
+
+    // Show confirmation dialog
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Delete Layout'),
+        content: Text(
+          'Are you sure you want to delete "${_layout!.title}"? This action cannot be undone.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.red[700],
+              foregroundColor: Colors.white,
+            ),
+            child: const Text('Delete'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true) return;
+
+    try {
+      setState(() {
+        _isDeleting = true;
+        _errorMessage = null;
+      });
+
+      await ServiceLocator().deleteCatalogSectionUseCase.call(widget.sectionId);
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Layout deleted successfully'),
+            backgroundColor: Colors.green,
+          ),
+        );
+        context.pop(true); // Return true to indicate deletion
+      }
+    } catch (e) {
+      setState(() {
+        _errorMessage = e.toString();
+        _isDeleting = false;
+      });
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error deleting layout: ${e.toString()}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -133,7 +197,7 @@ class _LayoutEditPageState extends State<LayoutEditPage> {
         backgroundColor: Colors.green[700],
         foregroundColor: Colors.white,
         actions: [
-          if (_isSaving)
+          if (_isSaving || _isDeleting)
             const Padding(
               padding: EdgeInsets.all(16.0),
               child: SizedBox(
@@ -145,12 +209,19 @@ class _LayoutEditPageState extends State<LayoutEditPage> {
                 ),
               ),
             )
-          else
+          else ...[
+            IconButton(
+              icon: const Icon(Icons.delete),
+              onPressed: _deleteLayout,
+              tooltip: 'Delete',
+              color: Colors.red[300],
+            ),
             IconButton(
               icon: const Icon(Icons.save),
               onPressed: _saveLayout,
               tooltip: 'Save',
             ),
+          ],
         ],
       ),
       body: _isLoading
@@ -298,20 +369,39 @@ class _LayoutEditPageState extends State<LayoutEditPage> {
                       ),
                       const SizedBox(height: 32),
 
-                      // Save Button
-                      SizedBox(
-                        width: double.infinity,
-                        child: ElevatedButton.icon(
-                          onPressed: _isSaving ? null : _saveLayout,
-                          icon: const Icon(Icons.save),
-                          label: const Text('Save Changes'),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.green[700],
-                            foregroundColor: Colors.white,
-                            padding: const EdgeInsets.symmetric(vertical: 16),
-                            disabledBackgroundColor: Colors.grey[400],
+                      // Action Buttons
+                      Row(
+                        children: [
+                          // Delete Button
+                          Expanded(
+                            child: OutlinedButton.icon(
+                              onPressed: (_isSaving || _isDeleting) ? null : _deleteLayout,
+                              icon: const Icon(Icons.delete),
+                              label: const Text('Delete'),
+                              style: OutlinedButton.styleFrom(
+                                foregroundColor: Colors.red[700],
+                                side: BorderSide(color: Colors.red[700]!),
+                                padding: const EdgeInsets.symmetric(vertical: 16),
+                              ),
+                            ),
                           ),
-                        ),
+                          const SizedBox(width: 12),
+                          // Save Button
+                          Expanded(
+                            flex: 2,
+                            child: ElevatedButton.icon(
+                              onPressed: (_isSaving || _isDeleting) ? null : _saveLayout,
+                              icon: const Icon(Icons.save),
+                              label: const Text('Save Changes'),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.green[700],
+                                foregroundColor: Colors.white,
+                                padding: const EdgeInsets.symmetric(vertical: 16),
+                                disabledBackgroundColor: Colors.grey[400],
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                     ],
                   ),

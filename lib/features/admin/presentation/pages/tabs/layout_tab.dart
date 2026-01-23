@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../../../di/service_locator.dart';
 import '../../../../../../app/routes.dart';
 import '../../../../catalog_layout/domain/models/catalog_section.dart';
+import '../widgets/add_layout_modal.dart';
 
 class LayoutTab extends StatefulWidget {
   const LayoutTab({super.key});
@@ -75,10 +76,22 @@ class _LayoutTabState extends State<LayoutTab> with AutomaticKeepAliveClientMixi
 
   void _onLayoutTap(CatalogSection layout) async {
     final result = await context.push<bool>(AppRoutes.adminLayoutEditWithId(layout.sectionId));
-    // If layout was updated, refresh the list
+    // If layout was updated or deleted, refresh the list
     if (result == true) {
       _loadLayouts(forceRefresh: true);
     }
+  }
+
+  void _showAddLayoutModal() {
+    showDialog(
+      context: context,
+      builder: (context) => AddLayoutModal(
+        existingLayouts: _layouts,
+        onSuccess: () {
+          _loadLayouts(forceRefresh: true);
+        },
+      ),
+    );
   }
 
   @override
@@ -151,14 +164,7 @@ class _LayoutTabState extends State<LayoutTab> with AutomaticKeepAliveClientMixi
                           ),
                           const SizedBox(height: 24),
                           ElevatedButton.icon(
-                            onPressed: () {
-                              // TODO: Implement add new layout
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text('Add new layout coming soon...'),
-                                ),
-                              );
-                            },
+                            onPressed: () => _showAddLayoutModal(),
                             icon: const Icon(Icons.add),
                             label: const Text('Add New Layout'),
                             style: ElevatedButton.styleFrom(
@@ -199,14 +205,7 @@ class _LayoutTabState extends State<LayoutTab> with AutomaticKeepAliveClientMixi
                                 ),
                               ),
                               ElevatedButton.icon(
-                                onPressed: () {
-                                  // TODO: Implement add new layout
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(
-                                      content: Text('Add new layout coming soon...'),
-                                    ),
-                                  );
-                                },
+                                onPressed: () => _showAddLayoutModal(),
                                 icon: const Icon(Icons.add, size: 18),
                                 label: const Text('Add New'),
                                 style: ElevatedButton.styleFrom(
