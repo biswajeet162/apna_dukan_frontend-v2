@@ -5,14 +5,57 @@ import '../../../search/presentation/search_bar_widget.dart';
 import '../../../../core/widgets/app_navbar.dart';
 import '../../../../app/routes.dart';
 import '../../../../di/service_locator.dart';
+import '../../../../core/services/auth_service.dart';
 import '../../../catalog_layout/domain/models/catalog_section.dart';
 import '../../../category/data/models/category_section_response.dart';
 import '../../../category/data/models/category_model.dart';
 import '../../../subcategory/data/models/subcategory_response.dart';
 import '../../../subcategory/data/models/subcategory_model.dart';
 
-class HomePage extends StatelessWidget {
+class HomePage extends StatefulWidget {
   const HomePage({super.key});
+
+  @override
+  State<HomePage> createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
+  late AuthService _authService;
+  bool _isAdmin = false;
+  bool _isLoadingAdmin = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _authService = AuthService(ServiceLocator().secureStorage);
+    _checkAdminStatus();
+  }
+
+  Future<void> _checkAdminStatus() async {
+    final isAdmin = await _authService.isAdmin();
+    setState(() {
+      _isAdmin = isAdmin;
+      _isLoadingAdmin = false;
+    });
+  }
+
+  void _onNavTap(int index) {
+    switch (index) {
+      case 0:
+        context.go(AppRoutes.home);
+        break;
+      case 1:
+        context.go(AppRoutes.categories);
+        break;
+      case 2:
+        context.go(AppRoutes.orders);
+        break;
+      case 3:
+        // Dashboard button (only visible for admin)
+        context.go(AppRoutes.adminDashboard);
+        break;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -30,22 +73,13 @@ class HomePage extends StatelessWidget {
           context.go(uri.toString());
         },
       ),
-      bottomNavigationBar: AppNavbar(
-        currentIndex: 0, // Home tab
-        onTap: (index) {
-          switch (index) {
-            case 0:
-              context.go(AppRoutes.home);
-              break;
-            case 1:
-              context.go(AppRoutes.categories);
-              break;
-            case 2:
-              context.go(AppRoutes.orders);
-              break;
-          }
-        },
-      ),
+      bottomNavigationBar: _isLoadingAdmin
+          ? null
+          : AppNavbar(
+              currentIndex: 0, // Home tab
+              onTap: _onNavTap,
+              isAdmin: _isAdmin,
+            ),
     );
   }
 }

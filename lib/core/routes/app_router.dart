@@ -33,6 +33,7 @@ import '../../features/settings/presentation/settings_page.dart';
 import '../../features/cms/presentation/about_us_page.dart';
 import '../../features/cms/presentation/terms_conditions_page.dart';
 import '../../features/cms/presentation/privacy_policy_page.dart';
+import '../../features/admin/presentation/pages/admin_dashboard_page.dart';
 
 final GoRouter appRouter = GoRouter(
   initialLocation: AppRoutes.home,
@@ -277,6 +278,32 @@ final GoRouter appRouter = GoRouter(
     GoRoute(
       path: AppRoutes.privacyPolicy,
       builder: (context, state) => const PrivacyPolicyPage(),
+    ),
+
+    // Admin routes
+    GoRoute(
+      path: AppRoutes.adminDashboard,
+      builder: (context, state) => const AdminDashboardPage(),
+    ),
+    GoRoute(
+      path: AppRoutes.adminDashboardLayout,
+      builder: (context, state) => const AdminDashboardPage(tab: 'layout'),
+    ),
+    GoRoute(
+      path: AppRoutes.adminDashboardCategory,
+      builder: (context, state) => const AdminDashboardPage(tab: 'category'),
+    ),
+    GoRoute(
+      path: AppRoutes.adminDashboardSubcategory,
+      builder: (context, state) => const AdminDashboardPage(tab: 'subcategory'),
+    ),
+    GoRoute(
+      path: AppRoutes.adminDashboardProduct,
+      builder: (context, state) => const AdminDashboardPage(tab: 'product'),
+    ),
+    GoRoute(
+      path: AppRoutes.adminDashboardProductGroup,
+      builder: (context, state) => const AdminDashboardPage(tab: 'product-group'),
     ),
   ],
   errorBuilder: (context, state) => const HomePage(),

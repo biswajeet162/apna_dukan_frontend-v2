@@ -76,6 +76,14 @@ class AppRoutes {
   static const String aboutUs = '/about-us';
   static const String termsConditions = '/terms-conditions';
   static const String privacyPolicy = '/privacy-policy';
+  
+  // Admin routes
+  static const String adminDashboard = '/admin/dashboard';
+  static const String adminDashboardLayout = '/admin/dashboard/layout';
+  static const String adminDashboardCategory = '/admin/dashboard/category';
+  static const String adminDashboardSubcategory = '/admin/dashboard/subcategory';
+  static const String adminDashboardProduct = '/admin/dashboard/product';
+  static const String adminDashboardProductGroup = '/admin/dashboard/product-group';
 }
 
 
