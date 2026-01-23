@@ -109,6 +109,26 @@ class CatalogLayoutRemoteDataSource {
       throw Exception('Error deleting catalog section: ${e.message}');
     }
   }
+
+  Future<List<CatalogSection>> bulkUpdateCatalogSections(Map<String, dynamic> bulkUpdateData) async {
+    try {
+      final response = await _dioClient.dio.patch(
+        ApiEndpoints.adminCatalogLayoutBulk,
+        data: bulkUpdateData,
+      );
+
+      if (response.statusCode == 200) {
+        final List<dynamic> data = response.data;
+        return data
+            .map((json) => CatalogSection.fromJson(json as Map<String, dynamic>))
+            .toList();
+      } else {
+        throw Exception('Failed to bulk update catalog sections');
+      }
+    } on DioException catch (e) {
+      throw Exception('Error bulk updating catalog sections: ${e.message}');
+    }
+  }
 }
 
 

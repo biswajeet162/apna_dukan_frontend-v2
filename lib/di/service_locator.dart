@@ -9,6 +9,7 @@ import '../features/catalog_layout/domain/usecases/get_catalog_section_by_id_use
 import '../features/catalog_layout/domain/usecases/update_catalog_section_usecase.dart';
 import '../features/catalog_layout/domain/usecases/create_catalog_section_usecase.dart';
 import '../features/catalog_layout/domain/usecases/delete_catalog_section_usecase.dart';
+import '../features/catalog_layout/domain/usecases/bulk_update_catalog_sections_usecase.dart';
 import '../features/category/data/datasources/category_remote_datasource.dart';
 import '../features/category/data/repositories/category_repository.dart';
 import '../features/category/domain/usecases/get_categories_usecase.dart';
@@ -63,6 +64,7 @@ class ServiceLocator {
   late final UpdateCatalogSectionUseCase _updateCatalogSectionUseCase;
   late final CreateCatalogSectionUseCase _createCatalogSectionUseCase;
   late final DeleteCatalogSectionUseCase _deleteCatalogSectionUseCase;
+  late final BulkUpdateCatalogSectionsUseCase _bulkUpdateCatalogSectionsUseCase;
   late final GetCategoriesUseCase _getCategoriesUseCase;
   late final GetSubCategoriesUseCase _getSubCategoriesUseCase;
   late final GetProductGroupsUseCase _getProductGroupsUseCase;
@@ -101,6 +103,7 @@ class ServiceLocator {
     _updateCatalogSectionUseCase = UpdateCatalogSectionUseCase(_catalogLayoutRepository);
     _createCatalogSectionUseCase = CreateCatalogSectionUseCase(_catalogLayoutRepository);
     _deleteCatalogSectionUseCase = DeleteCatalogSectionUseCase(_catalogLayoutRepository);
+    _bulkUpdateCatalogSectionsUseCase = BulkUpdateCatalogSectionsUseCase(_catalogLayoutRepository);
     _getCategoriesUseCase = GetCategoriesUseCase(_categoryRepository);
     _getSubCategoriesUseCase = GetSubCategoriesUseCase(_subCategoryRepository);
     _getProductGroupsUseCase = GetProductGroupsUseCase(_productGroupRepository);
@@ -119,6 +122,7 @@ class ServiceLocator {
   UpdateCatalogSectionUseCase get updateCatalogSectionUseCase => _updateCatalogSectionUseCase;
   CreateCatalogSectionUseCase get createCatalogSectionUseCase => _createCatalogSectionUseCase;
   DeleteCatalogSectionUseCase get deleteCatalogSectionUseCase => _deleteCatalogSectionUseCase;
+  BulkUpdateCatalogSectionsUseCase get bulkUpdateCatalogSectionsUseCase => _bulkUpdateCatalogSectionsUseCase;
   GetCategoriesUseCase get getCategoriesUseCase => _getCategoriesUseCase;
   GetSubCategoriesUseCase get getSubCategoriesUseCase => _getSubCategoriesUseCase;
   GetProductGroupsUseCase get getProductGroupsUseCase => _getProductGroupsUseCase;

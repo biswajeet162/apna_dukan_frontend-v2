@@ -8,6 +8,7 @@ abstract class CatalogLayoutRepositoryInterface {
   Future<CatalogSection> updateCatalogSection(String sectionId, Map<String, dynamic> updateData);
   Future<CatalogSection> createCatalogSection(Map<String, dynamic> createData);
   Future<void> deleteCatalogSection(String sectionId);
+  Future<List<CatalogSection>> bulkUpdateCatalogSections(Map<String, dynamic> bulkUpdateData);
 }
 
 
