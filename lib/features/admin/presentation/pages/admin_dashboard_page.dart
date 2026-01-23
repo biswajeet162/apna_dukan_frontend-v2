@@ -49,42 +49,48 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
   void _setInitialTab() {
     // Set initial tab based on route
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      final tab = widget.tab;
-      if (tab != null) {
-        switch (tab) {
-          case 'layout':
-            if (_tabController.index != 0) {
-              _tabController.animateTo(0);
-            }
-            break;
-          case 'category':
-            if (_tabController.index != 1) {
-              _tabController.animateTo(1);
-            }
-            break;
-          case 'subcategory':
-            if (_tabController.index != 2) {
-              _tabController.animateTo(2);
-            }
-            break;
-          case 'product':
-            if (_tabController.index != 3) {
-              _tabController.animateTo(3);
-            }
-            break;
-          case 'product-group':
-            if (_tabController.index != 4) {
-              _tabController.animateTo(4);
-            }
-            break;
-          default:
-            if (_tabController.index != 0) {
-              _tabController.animateTo(0);
-            }
-        }
-      }
+      _updateTabFromRoute();
     });
     _tabController.addListener(_onTabChanged);
+  }
+
+  void _updateTabFromRoute() {
+    final tab = widget.tab;
+    if (tab != null) {
+      int targetIndex;
+      switch (tab) {
+        case 'layout':
+          targetIndex = 0;
+          break;
+        case 'category':
+          targetIndex = 1;
+          break;
+        case 'subcategory':
+          targetIndex = 2;
+          break;
+        case 'product':
+          targetIndex = 3;
+          break;
+        case 'product-group':
+          targetIndex = 4;
+          break;
+        default:
+          targetIndex = 0;
+      }
+      // Only animate if the tab is different
+      if (_tabController.index != targetIndex) {
+        _tabController.animateTo(targetIndex);
+      }
+    }
+  }
+
+  @override
+  void didUpdateWidget(AdminDashboardPage oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // Only update tab if the route tab parameter changed
+    if (oldWidget.tab != widget.tab) {
+      _updateTabFromRoute();
+    }
   }
 
   void _onTabChanged() {
@@ -110,7 +116,11 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
         default:
           route = AppRoutes.adminDashboardLayout;
       }
-      context.go(route);
+      // Only update route if it's different from current route to prevent unnecessary rebuilds
+      final currentRoute = GoRouterState.of(context).uri.path;
+      if (currentRoute != route) {
+        context.go(route);
+      }
     }
   }
 
@@ -188,12 +198,13 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
       ),
       body: TabBarView(
         controller: _tabController,
+        // Use keys to preserve state when widget tree rebuilds
         children: const [
-          LayoutTab(),
-          CategoryTab(),
-          SubcategoryTab(),
-          ProductTab(),
-          ProductGroupTab(),
+          LayoutTab(key: ValueKey('layout_tab')),
+          CategoryTab(key: ValueKey('category_tab')),
+          SubcategoryTab(key: ValueKey('subcategory_tab')),
+          ProductTab(key: ValueKey('product_tab')),
+          ProductGroupTab(key: ValueKey('product_group_tab')),
         ],
       ),
       bottomNavigationBar: AppNavbar(

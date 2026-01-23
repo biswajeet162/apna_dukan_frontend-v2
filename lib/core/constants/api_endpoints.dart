@@ -8,6 +8,9 @@ class ApiEndpoints {
   static const String productsForProductGroup = '/v1/productGroup/{productGroupId}/products';
   static const String productDetails = '/v1/product/{productId}';
 
+  // Admin endpoints
+  static const String adminCatalogLayout = '/admin/catalog/layout';
+
   // Auth endpoints
   static const String login = '/auth/login';
   static const String signup = '/auth/register';

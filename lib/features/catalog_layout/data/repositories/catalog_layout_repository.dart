@@ -12,5 +12,10 @@ class CatalogLayoutRepository implements CatalogLayoutRepositoryInterface {
   Future<List<CatalogSection>> getEnabledCatalogSections() async {
     return await _remoteDataSource.getEnabledCatalogSections();
   }
+
+  @override
+  Future<List<CatalogSection>> getAllCatalogSectionsForAdmin() async {
+    return await _remoteDataSource.getAllCatalogSectionsForAdmin();
+  }
 }
 
