@@ -28,6 +28,10 @@ import '../features/auth/data/datasources/auth_remote_datasource.dart';
 import '../features/auth/data/repositories/auth_repository.dart';
 import '../features/auth/domain/usecases/login_usecase.dart';
 import '../features/auth/domain/usecases/signup_usecase.dart';
+import '../features/profile/data/datasources/profile_remote_datasource.dart';
+import '../features/profile/data/repositories/profile_repository.dart';
+import '../features/profile/domain/usecases/get_user_profile_usecase.dart';
+import '../features/profile/domain/usecases/get_user_addresses_usecase.dart';
 import '../core/storage/secure_storage.dart';
 
 class ServiceLocator {
@@ -47,6 +51,7 @@ class ServiceLocator {
   late final ProductGroupRemoteDataSource _productGroupRemoteDataSource;
   late final ProductListingRemoteDataSource _productListingRemoteDataSource;
   late final AuthRemoteDataSource _authRemoteDataSource;
+  late final ProfileRemoteDataSource _profileRemoteDataSource;
 
   // Repositories
   late final CatalogLayoutRepository _catalogLayoutRepository;
@@ -56,6 +61,7 @@ class ServiceLocator {
   late final ProductRepository _productRepository;
   late final HomeRepository _homeRepository;
   late final AuthRepository _authRepository;
+  late final ProfileRepository _profileRepository;
 
   // Use Cases
   late final GetCatalogLayoutUseCase _getCatalogLayoutUseCase;
@@ -86,6 +92,7 @@ class ServiceLocator {
     _productGroupRemoteDataSource = ProductGroupRemoteDataSource(_dioClient);
     _productListingRemoteDataSource = ProductListingRemoteDataSource(_dioClient);
     _authRemoteDataSource = AuthRemoteDataSource(_dioClient);
+    _profileRemoteDataSource = ProfileRemoteDataSource(_dioClient);
 
     // Initialize repositories
     _catalogLayoutRepository = CatalogLayoutRepository(_catalogLayoutRemoteDataSource);
@@ -95,6 +102,7 @@ class ServiceLocator {
     _productRepository = ProductRepository(_productListingRemoteDataSource);
     _homeRepository = HomeRepository(_catalogLayoutRepository);
     _authRepository = AuthRepository(_authRemoteDataSource);
+    _profileRepository = ProfileRepository(_profileRemoteDataSource);
 
     // Initialize use cases
     _getCatalogLayoutUseCase = GetCatalogLayoutUseCase(_catalogLayoutRepository);
@@ -137,4 +145,5 @@ class ServiceLocator {
   SecureStorage get secureStorage => _secureStorage;
   LoginUseCase get loginUseCase => _loginUseCase;
   SignupUseCase get signupUseCase => _signupUseCase;
+  ProfileRepository get profileRepository => _profileRepository;
 }

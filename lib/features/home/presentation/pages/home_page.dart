@@ -347,7 +347,12 @@ class _HomeContentState extends State<HomeContent> {
                     ),
                   ),
                   const SizedBox(width: 8),
-                  Icon(Icons.person, size: 28, color: Colors.white),
+                  GestureDetector(
+                    onTap: () {
+                      context.go(AppRoutes.profile);
+                    },
+                    child: Icon(Icons.person, size: 28, color: Colors.white),
+                  ),
                 ],
               ),
             ],
