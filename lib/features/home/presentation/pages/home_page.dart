@@ -11,6 +11,7 @@ import '../../../category/data/models/category_section_response.dart';
 import '../../../category/data/models/category_model.dart';
 import '../../../subcategory/data/models/subcategory_response.dart';
 import '../../../subcategory/data/models/subcategory_model.dart';
+import '../widgets/add_subcategory_button.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -61,6 +62,7 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: HomeContent(
+        isAdmin: _isAdmin,
         onSubCategoryTap: (subCategoryId, subCategoryName) {
           // Navigate to /categories route with subCategoryId
           final uri = Uri(
@@ -85,10 +87,12 @@ class _HomePageState extends State<HomePage> {
 }
 
 class HomeContent extends StatefulWidget {
+  final bool isAdmin;
   final Function(String subCategoryId, String subCategoryName)? onSubCategoryTap;
 
   const HomeContent({
     super.key,
+    this.isAdmin = false,
     this.onSubCategoryTap,
   });
 
@@ -196,6 +200,16 @@ class _HomeContentState extends State<HomeContent> {
         print('Error loading subcategories for category $categoryId: $e');
       });
     }
+  }
+
+  void _navigateToAddSubcategory(CategoryModel category) {
+    final uri = Uri(
+      path: AppRoutes.homeAddSubcategoryWithIds(category.sectionId, category.categoryId),
+      queryParameters: {
+        'categoryName': category.name,
+      },
+    );
+    context.go(uri.toString());
   }
 
   @override
@@ -509,19 +523,39 @@ class _HomeContentState extends State<HomeContent> {
               ),
             )
           else if (subCategoryResponse != null && subCategoryResponse.subCategories.isNotEmpty)
-            _buildSubCategoriesGrid(subCategoryResponse.subCategories, layoutType, scrollType)
+            _buildSubCategoriesGrid(
+              subCategoryResponse.subCategories,
+              layoutType,
+              scrollType,
+              category,
+            )
           else if (subCategoryResponse != null && subCategoryResponse.subCategories.isEmpty)
-            Padding(
-              padding: const EdgeInsets.only(left: 16),
-              child: Text(
-                'No subcategories',
-                style: TextStyle(
-                  fontSize: 12,
-                  color: Colors.grey[500],
-                  fontStyle: FontStyle.italic,
-                ),
-              ),
-            ),
+            widget.isAdmin
+                ? _buildEmptySubcategoriesWithAddButton(category)
+                : Padding(
+                    padding: const EdgeInsets.only(left: 16),
+                    child: Text(
+                      'No subcategories',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.grey[500],
+                        fontStyle: FontStyle.italic,
+                      ),
+                    ),
+                  ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildEmptySubcategoriesWithAddButton(CategoryModel category) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 4),
+      child: Row(
+        children: [
+          AddSubcategoryButton(
+            onTap: () => _navigateToAddSubcategory(category),
+          ),
         ],
       ),
     );
@@ -531,12 +565,14 @@ class _HomeContentState extends State<HomeContent> {
     List<SubCategoryModel> subCategories,
     LayoutType layoutType,
     ScrollType scrollType,
+    CategoryModel category,
   ) {
     // Sort by displayOrder
     final sortedSubCategories = List<SubCategoryModel>.from(subCategories)
       ..sort((a, b) => a.displayOrder.compareTo(b.displayOrder));
 
     final itemCount = sortedSubCategories.length;
+    final shouldShowAddButton = widget.isAdmin;
     
     // Items that should NOT be horizontally scrollable: 3, 4, 7, or 8
     final nonScrollableCounts = [3, 4, 7, 8];
@@ -553,8 +589,13 @@ class _HomeContentState extends State<HomeContent> {
           mainAxisSpacing: 0,
           childAspectRatio: 0.58,
         ),
-        itemCount: sortedSubCategories.length,
+        itemCount: sortedSubCategories.length + (shouldShowAddButton ? 1 : 0),
         itemBuilder: (context, index) {
+          if (shouldShowAddButton && index == sortedSubCategories.length) {
+            return AddSubcategoryButton(
+              onTap: () => _navigateToAddSubcategory(category),
+            );
+          }
           return _buildSubCategoryCard(sortedSubCategories[index]);
         },
       );
@@ -562,26 +603,11 @@ class _HomeContentState extends State<HomeContent> {
     
     // If less than 5 items (and not 3 or 4), show in single line horizontal
     if (itemCount < 5) {
-      return _buildSingleLineHorizontal(sortedSubCategories);
+      return _buildSingleLineHorizontal(sortedSubCategories, category);
     }
 
-    // Determine number of rows based on layoutType (for >= 5 items)
-    int rows = 2; // Default to TWO_ROW
-    switch (layoutType) {
-      case LayoutType.singleRow:
-        rows = 1;
-        break;
-      case LayoutType.twoRow:
-        rows = 2;
-        break;
-      case LayoutType.threeRow:
-        rows = 3;
-        break;
-      case LayoutType.fourRow:
-        rows = 4;
-        break;
-    }
-
+    // Grid layout with 4 items per row
+    // The number of rows will be automatically calculated based on itemCount
     const itemsPerRow = 4;
 
     // Always show fixed grid without horizontal scrolling
@@ -596,21 +622,28 @@ class _HomeContentState extends State<HomeContent> {
         mainAxisSpacing: 0,
         childAspectRatio: 0.58,
       ),
-      itemCount: sortedSubCategories.length,
+      itemCount: sortedSubCategories.length + (shouldShowAddButton ? 1 : 0),
       itemBuilder: (context, index) {
+        if (shouldShowAddButton && index == sortedSubCategories.length) {
+          return AddSubcategoryButton(
+            onTap: () => _navigateToAddSubcategory(category),
+          );
+        }
         return _buildSubCategoryCard(sortedSubCategories[index]);
       },
     );
   }
 
-  Widget _buildSingleLineHorizontal(List<SubCategoryModel> subCategories) {
+  Widget _buildSingleLineHorizontal(List<SubCategoryModel> subCategories, CategoryModel category) {
     const spacing = 8.0;
     final screenWidth = MediaQuery.of(context).size.width;
     const padding = 16.0; // 8 on each side
     final itemWidth = ((screenWidth - padding - (3 * spacing)) / 4);
     final itemHeight = itemWidth / 0.85;
-    final totalWidth = (subCategories.length * itemWidth) + 
-                       ((subCategories.length - 1) * spacing) + 
+    final shouldShowAddButton = widget.isAdmin;
+    final totalItemCount = subCategories.length + (shouldShowAddButton ? 1 : 0);
+    final totalWidth = (totalItemCount * itemWidth) + 
+                       ((totalItemCount - 1) * spacing) + 
                        padding;
 
     return SizedBox(
@@ -621,20 +654,28 @@ class _HomeContentState extends State<HomeContent> {
         child: SizedBox(
           width: totalWidth,
           child: Row(
-            children: subCategories.asMap().entries.map((entry) {
-              final index = entry.key;
-              final subCategory = entry.value;
-              return Padding(
-                padding: EdgeInsets.only(
-                  right: index < subCategories.length - 1 ? spacing : 0,
-                ),
-                child: SizedBox(
+            children: [
+              ...subCategories.map((subCategory) {
+                return Padding(
+                  padding: EdgeInsets.only(
+                    right: spacing,
+                  ),
+                  child: SizedBox(
+                    width: itemWidth,
+                    height: itemHeight,
+                    child: _buildSubCategoryCard(subCategory),
+                  ),
+                );
+              }),
+              if (shouldShowAddButton)
+                SizedBox(
                   width: itemWidth,
                   height: itemHeight,
-                  child: _buildSubCategoryCard(subCategory),
+                  child: AddSubcategoryButton(
+                    onTap: () => _navigateToAddSubcategory(category),
+                  ),
                 ),
-              );
-            }).toList(),
+            ],
           ),
         ),
       ),

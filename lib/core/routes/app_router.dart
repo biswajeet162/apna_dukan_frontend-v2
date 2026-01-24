@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../app/routes.dart';
 import '../../features/home/presentation/pages/home_page.dart';
+import '../../features/home/presentation/pages/add_subcategory_page.dart';
 import '../../features/splash/presentation/splash_page.dart';
 import '../../features/search/presentation/search_page.dart';
 import '../../features/auth/presentation/login/login_page.dart';
@@ -63,6 +64,28 @@ final GoRouter appRouter = GoRouter(
         // When route is /home, create HomePage which shows HomeContent
         // HomeContent.initState() will make 3 API calls: Layout, Categories, Subcategories
         return const HomePage();
+      },
+    ),
+
+    // Add Subcategory route - /home/section/:sectionId/category/:categoryId/add-subcategory
+    GoRoute(
+      path: AppRoutes.homeAddSubcategory,
+      builder: (context, state) {
+        final sectionId = state.pathParameters['sectionId'];
+        final categoryId = state.pathParameters['categoryId'];
+        // Get category name from query parameters or use default
+        final categoryName = state.uri.queryParameters['categoryName'] ?? 'Category';
+        
+        if (sectionId == null || categoryId == null) {
+          // Invalid route, redirect to home
+          return const HomePage();
+        }
+        
+        return AddSubcategoryPage(
+          sectionId: sectionId,
+          categoryId: categoryId,
+          categoryName: categoryName,
+        );
       },
     ),
 

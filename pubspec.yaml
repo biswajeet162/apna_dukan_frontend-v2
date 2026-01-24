@@ -46,6 +46,9 @@ dependencies:
 
   # Secure storage
   flutter_secure_storage: ^9.0.0
+  
+  # UUID generation
+  uuid: ^4.3.3
 
 dev_dependencies:
   flutter_test:

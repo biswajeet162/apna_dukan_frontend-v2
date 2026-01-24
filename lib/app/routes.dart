@@ -93,6 +93,10 @@ class AppRoutes {
   static String adminCategoryEditWithId(String categoryId) => '/admin/dashboard/category/edit/$categoryId';
   static const String adminCategoryAdd = '/admin/dashboard/category/:categoryId/add-category';
   static String adminCategoryAddWithCategoryId(String categoryId) => '/admin/dashboard/category/$categoryId/add-category';
+  
+  // Home admin routes
+  static const String homeAddSubcategory = '/home/section/:sectionId/category/:categoryId/add-subcategory';
+  static String homeAddSubcategoryWithIds(String sectionId, String categoryId) => '/home/section/$sectionId/category/$categoryId/add-subcategory';
 }
 
 
