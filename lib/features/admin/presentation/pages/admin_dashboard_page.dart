@@ -240,6 +240,18 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
                     icon: Icons.subdirectory_arrow_right,
                     route: AppRoutes.adminDashboardSubcategory,
                   ),
+                  _buildDashboardCard(
+                    context,
+                    title: 'Product Group',
+                    icon: Icons.inventory_2,
+                    route: AppRoutes.adminDashboardProductGroup,
+                  ),
+                  _buildDashboardCard(
+                    context,
+                    title: 'Product',
+                    icon: Icons.shopping_bag,
+                    route: AppRoutes.adminDashboardProduct,
+                  ),
                 ],
               ),
             ),
