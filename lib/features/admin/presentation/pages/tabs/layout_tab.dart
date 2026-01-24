@@ -5,7 +5,6 @@ import '../../../../../../app/routes.dart';
 import '../../../../catalog_layout/domain/models/catalog_section.dart';
 import '../../../../catalog_layout/data/models/bulk_update_item.dart';
 import '../../../../catalog_layout/data/models/bulk_update_request.dart';
-import '../widgets/add_layout_modal.dart';
 
 class LayoutTab extends StatefulWidget {
   const LayoutTab({super.key});
@@ -77,24 +76,16 @@ class _LayoutTabState extends State<LayoutTab> with AutomaticKeepAliveClientMixi
     }
   }
 
-  void _onLayoutTap(CatalogSection layout) async {
-    final result = await context.push<bool>(AppRoutes.adminLayoutEditWithId(layout.sectionId));
-    // If layout was updated or deleted, refresh the list
-    if (result == true) {
-      _loadLayouts(forceRefresh: true);
-    }
+  void _onLayoutTap(CatalogSection layout) {
+    final route = AppRoutes.adminLayoutEditWithId(layout.sectionId);
+    print('Navigating to edit: $route');
+    context.go(route);
   }
 
-  void _showAddLayoutModal() {
-    showDialog(
-      context: context,
-      builder: (context) => AddLayoutModal(
-        existingLayouts: _layouts,
-        onSuccess: () {
-          _loadLayouts(forceRefresh: true);
-        },
-      ),
-    );
+  void _navigateToAddSection() {
+    final route = AppRoutes.adminLayoutAdd;
+    print('Navigating to add: $route');
+    context.go(route);
   }
 
   Future<void> _handleReorder(int oldIndex, int newIndex) async {
@@ -254,7 +245,7 @@ class _LayoutTabState extends State<LayoutTab> with AutomaticKeepAliveClientMixi
                           ),
                           const SizedBox(height: 24),
                           ElevatedButton.icon(
-                            onPressed: () => _showAddLayoutModal(),
+                            onPressed: () => _navigateToAddSection(),
                             icon: const Icon(Icons.add),
                             label: const Text('Add New Layout'),
                             style: ElevatedButton.styleFrom(
@@ -297,19 +288,19 @@ class _LayoutTabState extends State<LayoutTab> with AutomaticKeepAliveClientMixi
                                       color: Colors.grey[800],
                                     ),
                                   ),
-                                  ElevatedButton.icon(
-                                    onPressed: () => _showAddLayoutModal(),
-                                    icon: const Icon(Icons.add, size: 18),
-                                    label: const Text('Add New'),
-                                    style: ElevatedButton.styleFrom(
-                                      backgroundColor: Colors.green[700],
-                                      foregroundColor: Colors.white,
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 16,
-                                        vertical: 8,
-                                      ),
-                                    ),
-                                  ),
+                          ElevatedButton.icon(
+                            onPressed: () => _navigateToAddSection(),
+                            icon: const Icon(Icons.add, size: 18),
+                            label: const Text('Add New'),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.green[700],
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                                vertical: 8,
+                              ),
+                            ),
+                          ),
                                 ],
                               ),
                               const SizedBox(height: 8),

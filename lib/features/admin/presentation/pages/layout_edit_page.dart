@@ -108,7 +108,7 @@ class _LayoutEditPageState extends State<LayoutEditPage> {
             backgroundColor: Colors.green,
           ),
         );
-        context.pop(true); // Return true to indicate success
+        context.go(AppRoutes.adminDashboardLayout); // Navigate back to layout list
       }
     } catch (e) {
       setState(() {
@@ -193,6 +193,11 @@ class _LayoutEditPageState extends State<LayoutEditPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => context.go(AppRoutes.adminDashboardLayout),
+          tooltip: 'Back',
+        ),
         title: const Text('Edit Layout'),
         backgroundColor: Colors.green[700],
         foregroundColor: Colors.white,

@@ -35,10 +35,12 @@ import '../../features/cms/presentation/terms_conditions_page.dart';
 import '../../features/cms/presentation/privacy_policy_page.dart';
 import '../../features/admin/presentation/pages/admin_dashboard_page.dart';
 import '../../features/admin/presentation/pages/layout_edit_page.dart';
+import '../../features/admin/presentation/pages/layout_add_page.dart';
 import '../../features/admin/presentation/pages/category_edit_page.dart';
 
 final GoRouter appRouter = GoRouter(
   initialLocation: AppRoutes.home,
+  debugLogDiagnostics: true, // Enable debug logging
   redirect: (BuildContext context, GoRouterState state) {
     // Redirect root path to /home
     if (state.uri.path == '/' || state.uri.path.isEmpty) {
@@ -287,6 +289,26 @@ final GoRouter appRouter = GoRouter(
       path: AppRoutes.adminDashboard,
       builder: (context, state) => const AdminDashboardPage(),
     ),
+    // More specific routes first (with parameters or specific paths)
+    GoRoute(
+      path: AppRoutes.adminLayoutEdit,
+      builder: (context, state) {
+        final sectionId = state.pathParameters['sectionId']!;
+        return LayoutEditPage(sectionId: sectionId);
+      },
+    ),
+    GoRoute(
+      path: AppRoutes.adminLayoutAdd,
+      builder: (context, state) => const LayoutAddPage(),
+    ),
+    GoRoute(
+      path: AppRoutes.adminCategoryEdit,
+      builder: (context, state) {
+        final categoryId = state.pathParameters['categoryId']!;
+        return CategoryEditPage(categoryId: categoryId);
+      },
+    ),
+    // Less specific routes after (tab routes)
     GoRoute(
       path: AppRoutes.adminDashboardLayout,
       builder: (context, state) => const AdminDashboardPage(tab: 'layout'),
@@ -306,20 +328,6 @@ final GoRouter appRouter = GoRouter(
     GoRoute(
       path: AppRoutes.adminDashboardProductGroup,
       builder: (context, state) => const AdminDashboardPage(tab: 'product-group'),
-    ),
-    GoRoute(
-      path: AppRoutes.adminLayoutEdit,
-      builder: (context, state) {
-        final sectionId = state.pathParameters['sectionId']!;
-        return LayoutEditPage(sectionId: sectionId);
-      },
-    ),
-    GoRoute(
-      path: AppRoutes.adminCategoryEdit,
-      builder: (context, state) {
-        final categoryId = state.pathParameters['categoryId']!;
-        return CategoryEditPage(categoryId: categoryId);
-      },
     ),
   ],
   errorBuilder: (context, state) => const HomePage(),
