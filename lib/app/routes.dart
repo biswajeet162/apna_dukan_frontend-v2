@@ -97,6 +97,13 @@ class AppRoutes {
   // Home admin routes
   static const String homeAddSubcategory = '/home/section/:sectionId/category/:categoryId/add-subcategory';
   static String homeAddSubcategoryWithIds(String sectionId, String categoryId) => '/home/section/$sectionId/category/$categoryId/add-subcategory';
+  static const String homeEditSubcategory = '/home/edit/section/:sectionId/category/:categoryId/Subcategory/:subCategoryId';
+  static String homeEditSubcategoryWithIds(String sectionId, String categoryId, String subCategoryId, {String? subCategoryName}) {
+    if (subCategoryName != null) {
+      return '/home/edit/section/$sectionId/category/$categoryId/Subcategory/$subCategoryId?subCategoryName=${Uri.encodeComponent(subCategoryName)}';
+    }
+    return '/home/edit/section/$sectionId/category/$categoryId/Subcategory/$subCategoryId';
+  }
 }
 
 

@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import '../../app/routes.dart';
 import '../../features/home/presentation/pages/home_page.dart';
 import '../../features/home/presentation/pages/add_subcategory_page.dart';
+import '../../features/home/presentation/pages/edit_subcategory_page.dart';
 import '../../features/splash/presentation/splash_page.dart';
 import '../../features/search/presentation/search_page.dart';
 import '../../features/auth/presentation/login/login_page.dart';
@@ -85,6 +86,30 @@ final GoRouter appRouter = GoRouter(
           sectionId: sectionId,
           categoryId: categoryId,
           categoryName: categoryName,
+        );
+      },
+    ),
+
+    // Edit Subcategory route - /home/edit/section/:sectionId/category/:categoryId/Subcategory/:subCategoryId
+    GoRoute(
+      path: AppRoutes.homeEditSubcategory,
+      builder: (context, state) {
+        final sectionId = state.pathParameters['sectionId'];
+        final categoryId = state.pathParameters['categoryId'];
+        final subCategoryId = state.pathParameters['subCategoryId'];
+        // Get subcategory name from query parameters
+        final subCategoryName = state.uri.queryParameters['subCategoryName'];
+        
+        if (sectionId == null || categoryId == null || subCategoryId == null) {
+          // Invalid route, redirect to home
+          return const HomePage();
+        }
+        
+        return EditSubcategoryPage(
+          sectionId: sectionId,
+          categoryId: categoryId,
+          subCategoryId: subCategoryId,
+          subCategoryName: subCategoryName,
         );
       },
     ),

@@ -921,7 +921,18 @@ class _HomeContentState extends State<HomeContent> {
 
     return GestureDetector(
       onTap: () {
-        if (!isEditMode) {
+        if (isEditMode && category != null) {
+          // Navigate to edit page when in edit mode
+          final uri = Uri(
+            path: AppRoutes.homeEditSubcategoryWithIds(
+              category.sectionId,
+              category.categoryId,
+              subCategory.subCategoryId,
+              subCategoryName: subCategory.name,
+            ),
+          );
+          context.go(uri.toString());
+        } else if (!isEditMode) {
           widget.onSubCategoryTap?.call(subCategory.subCategoryId, subCategory.name);
         }
       },
