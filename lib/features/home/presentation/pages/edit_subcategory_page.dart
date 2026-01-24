@@ -19,6 +19,14 @@ class EditSubcategoryPage extends StatefulWidget {
     this.subCategoryName,
   });
 
+  // Helper method to get back URL with edit mode preserved
+  static String getBackUrl(String? categoryId) {
+    if (categoryId != null) {
+      return '${AppRoutes.home}?editCategoryId=$categoryId';
+    }
+    return AppRoutes.home;
+  }
+
   @override
   State<EditSubcategoryPage> createState() => _EditSubcategoryPageState();
 }
@@ -115,8 +123,8 @@ class _EditSubcategoryPageState extends State<EditSubcategoryPage> {
             backgroundColor: Colors.green,
           ),
         );
-        // Navigate back to home
-        context.go(AppRoutes.home);
+        // Navigate back to home with edit mode preserved
+        context.go(EditSubcategoryPage.getBackUrl(widget.categoryId));
       }
     } catch (e) {
       if (mounted) {
@@ -172,8 +180,8 @@ class _EditSubcategoryPageState extends State<EditSubcategoryPage> {
             backgroundColor: Colors.green,
           ),
         );
-        // Navigate back to home
-        context.go(AppRoutes.home);
+        // Navigate back to home with edit mode preserved
+        context.go(EditSubcategoryPage.getBackUrl(widget.categoryId));
       }
     } catch (e) {
       if (mounted) {
@@ -227,7 +235,7 @@ class _EditSubcategoryPageState extends State<EditSubcategoryPage> {
         foregroundColor: Colors.white,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
-          onPressed: (_isSaving || _isDeleting) ? null : () => context.go(AppRoutes.home),
+          onPressed: (_isSaving || _isDeleting) ? null : () => context.go(EditSubcategoryPage.getBackUrl(widget.categoryId)),
         ),
       ),
       body: _isLoading

@@ -64,7 +64,9 @@ final GoRouter appRouter = GoRouter(
       builder: (context, state) {
         // When route is /home, create HomePage which shows HomeContent
         // HomeContent.initState() will make 3 API calls: Layout, Categories, Subcategories
-        return const HomePage();
+        // Check for editCategoryId query parameter to restore edit mode
+        final editCategoryId = state.uri.queryParameters['editCategoryId'];
+        return HomePage(initialEditCategoryId: editCategoryId);
       },
     ),
 

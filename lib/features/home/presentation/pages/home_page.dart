@@ -14,7 +14,12 @@ import '../../../subcategory/data/models/subcategory_model.dart';
 import '../widgets/add_subcategory_button.dart';
 
 class HomePage extends StatefulWidget {
-  const HomePage({super.key});
+  final String? initialEditCategoryId;
+
+  const HomePage({
+    super.key,
+    this.initialEditCategoryId,
+  });
 
   @override
   State<HomePage> createState() => _HomePageState();
@@ -63,6 +68,7 @@ class _HomePageState extends State<HomePage> {
     return Scaffold(
       body: HomeContent(
         isAdmin: _isAdmin,
+        initialEditCategoryId: widget.initialEditCategoryId,
         onSubCategoryTap: (subCategoryId, subCategoryName) {
           // Navigate to /categories route with subCategoryId
           final uri = Uri(
@@ -88,11 +94,13 @@ class _HomePageState extends State<HomePage> {
 
 class HomeContent extends StatefulWidget {
   final bool isAdmin;
+  final String? initialEditCategoryId;
   final Function(String subCategoryId, String subCategoryName)? onSubCategoryTap;
 
   const HomeContent({
     super.key,
     this.isAdmin = false,
+    this.initialEditCategoryId,
     this.onSubCategoryTap,
   });
 
@@ -114,6 +122,10 @@ class _HomeContentState extends State<HomeContent> {
   @override
   void initState() {
     super.initState();
+    // Restore edit mode if provided
+    if (widget.initialEditCategoryId != null) {
+      _activeEditCategoryId = widget.initialEditCategoryId;
+    }
     // When route is /home, ALWAYS make these 3 API calls:
     // 1. Layout API
     // 2. Categories API  
