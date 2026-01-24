@@ -8,8 +8,10 @@ import '../../../../di/service_locator.dart';
 import '../../../../core/services/auth_service.dart';
 import '../../../catalog_layout/domain/models/catalog_section.dart';
 import '../../../category/data/models/category_section_response.dart';
+import '../../../category/data/models/category_section_admin_response.dart';
 import '../../../category/data/models/category_model.dart';
 import '../../../subcategory/data/models/subcategory_response.dart';
+import '../../../subcategory/data/models/subcategory_admin_response.dart';
 import '../../../subcategory/data/models/subcategory_model.dart';
 import '../../../subcategory/data/models/bulk_update_subcategory_request.dart';
 import '../../../subcategory/data/models/bulk_update_subcategory_item.dart';
@@ -67,6 +69,12 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
+    if (_isLoadingAdmin) {
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
+
     return Scaffold(
       body: HomeContent(
         isAdmin: _isAdmin,
@@ -83,13 +91,11 @@ class _HomePageState extends State<HomePage> {
           context.go(uri.toString());
         },
       ),
-      bottomNavigationBar: _isLoadingAdmin
-          ? null
-          : AppNavbar(
-              currentIndex: 0, // Home tab
-              onTap: _onNavTap,
-              isAdmin: _isAdmin,
-            ),
+      bottomNavigationBar: AppNavbar(
+        currentIndex: 0, // Home tab
+        onTap: _onNavTap,
+        isAdmin: _isAdmin,
+      ),
     );
   }
 }
@@ -135,6 +141,15 @@ class _HomeContentState extends State<HomeContent> {
     _loadCatalogLayout();
   }
 
+  @override
+  void didUpdateWidget(HomeContent oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // Reload data if admin status changes to ensure admin endpoints are used
+    if (oldWidget.isAdmin != widget.isAdmin) {
+      _loadCatalogLayout();
+    }
+  }
+
   Future<void> _loadCatalogLayout() async {
     try {
       setState(() {
@@ -143,7 +158,9 @@ class _HomeContentState extends State<HomeContent> {
       });
 
       // API CALL #1: Load Catalog Layout
-      final sections = await ServiceLocator().getCatalogLayoutUseCase.call();
+      final sections = widget.isAdmin
+          ? await ServiceLocator().getAllCatalogLayoutsUseCase.call()
+          : await ServiceLocator().getCatalogLayoutUseCase.call();
       
       setState(() {
         _catalogSections = sections;
@@ -169,6 +186,43 @@ class _HomeContentState extends State<HomeContent> {
     }
   }
 
+  CategorySectionResponse _mapAdminCategoryResponse(CategorySectionAdminResponse adminResponse) {
+    return CategorySectionResponse(
+      sectionId: adminResponse.sectionId,
+      sectionCode: adminResponse.sectionCode,
+      categories: adminResponse.categories
+          .map((cat) => CategoryModel(
+                categoryId: cat.categoryId,
+                sectionId: cat.sectionId,
+                name: cat.name,
+                description: cat.description,
+                code: cat.code,
+                displayOrder: cat.displayOrder,
+                enabled: cat.enabled,
+              ))
+          .toList(),
+    );
+  }
+
+  SubCategoryResponse _mapAdminSubCategoryResponse(SubCategoryAdminResponse adminResponse) {
+    return SubCategoryResponse(
+      categoryId: adminResponse.categoryId,
+      categoryName: adminResponse.categoryName,
+      subCategories: adminResponse.subCategories
+          .map((sub) => SubCategoryModel(
+                subCategoryId: sub.subCategoryId,
+                categoryId: sub.categoryId,
+                name: sub.name,
+                description: sub.description,
+                code: sub.code,
+                displayOrder: sub.displayOrder,
+                enabled: sub.enabled,
+                imageUrl: sub.imageUrl,
+              ))
+          .toList(),
+    );
+  }
+
   Future<void> _loadCategories(String sectionId) async {
     try {
       setState(() {
@@ -177,7 +231,11 @@ class _HomeContentState extends State<HomeContent> {
       });
 
       // API CALL #2: Load Categories
-      final categoryResponse = await ServiceLocator().getCategoriesUseCase.call(sectionId);
+      final categoryResponse = widget.isAdmin
+          ? _mapAdminCategoryResponse(
+              await ServiceLocator().getCategoriesForAdminUseCase.call(sectionId),
+            )
+          : await ServiceLocator().getCategoriesUseCase.call(sectionId);
       
       setState(() {
         _categorySectionResponse = categoryResponse;
@@ -202,7 +260,11 @@ class _HomeContentState extends State<HomeContent> {
         _loadingSubCategories[categoryId] = true;
       });
 
-      final subCategoryResponse = await ServiceLocator().getSubCategoriesUseCase.call(categoryId);
+      final subCategoryResponse = widget.isAdmin
+          ? _mapAdminSubCategoryResponse(
+              await ServiceLocator().getSubCategoriesForAdminUseCase.call(categoryId),
+            )
+          : await ServiceLocator().getSubCategoriesUseCase.call(categoryId);
       
       setState(() {
         _subCategoriesMap[categoryId] = subCategoryResponse;
