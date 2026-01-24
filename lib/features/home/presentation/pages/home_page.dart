@@ -11,6 +11,8 @@ import '../../../category/data/models/category_section_response.dart';
 import '../../../category/data/models/category_model.dart';
 import '../../../subcategory/data/models/subcategory_response.dart';
 import '../../../subcategory/data/models/subcategory_model.dart';
+import '../../../subcategory/data/models/bulk_update_subcategory_request.dart';
+import '../../../subcategory/data/models/bulk_update_subcategory_item.dart';
 import '../widgets/add_subcategory_button.dart';
 
 class HomePage extends StatefulWidget {
@@ -245,7 +247,17 @@ class _HomeContentState extends State<HomeContent> {
     final item = subCategories.removeAt(oldIndex);
     subCategories.insert(newIndex, item);
 
-    // Update displayOrder for all items
+    // Update displayOrder for all items (starting from 1)
+    final bulkUpdateItems = <BulkUpdateSubCategoryItem>[];
+    for (int i = 0; i < subCategories.length; i++) {
+      final subCat = subCategories[i];
+      bulkUpdateItems.add(BulkUpdateSubCategoryItem(
+        subCategoryId: subCat.subCategoryId,
+        displayOrder: i + 1, // Start from 1, increment by 1
+      ));
+    }
+
+    // Create updated subcategories for local state
     final updatedSubCategories = <SubCategoryModel>[];
     for (int i = 0; i < subCategories.length; i++) {
       final subCat = subCategories[i];
@@ -255,7 +267,7 @@ class _HomeContentState extends State<HomeContent> {
         name: subCat.name,
         description: subCat.description,
         code: subCat.code,
-        displayOrder: i + 1,
+        displayOrder: i + 1, // Start from 1
         enabled: subCat.enabled,
         imageUrl: subCat.imageUrl,
       ));
@@ -270,16 +282,15 @@ class _HomeContentState extends State<HomeContent> {
       );
     });
 
-    // Update displayOrder via API
+    // Update displayOrder via bulk API
     try {
-      for (final subCat in updatedSubCategories) {
-        await ServiceLocator().updateSubCategoryUseCase.call(
-          subCat.subCategoryId,
-          {
-            'displayOrder': subCat.displayOrder,
-          },
-        );
-      }
+      final bulkUpdateRequest = BulkUpdateSubCategoryRequest(
+        subCategories: bulkUpdateItems,
+      );
+      
+      await ServiceLocator().bulkUpdateSubCategoriesUseCase.call(
+        bulkUpdateRequest.toJson(),
+      );
     } catch (e) {
       // If API call fails, reload subcategories to restore original order
       _loadSubCategories(categoryId);

@@ -100,6 +100,24 @@ class SubCategoryRemoteDataSource {
       throw Exception('Error deleting subcategory: ${e.message}');
     }
   }
+
+  Future<List<SubCategoryAdminModel>> bulkUpdateSubCategories(Map<String, dynamic> bulkUpdateData) async {
+    try {
+      final response = await _dioClient.dio.patch(
+        ApiEndpoints.adminSubCategoryBulk,
+        data: bulkUpdateData,
+      );
+
+      if (response.statusCode == 200) {
+        final List<dynamic> data = response.data as List<dynamic>;
+        return data.map((item) => SubCategoryAdminModel.fromJson(item as Map<String, dynamic>)).toList();
+      } else {
+        throw Exception('Failed to bulk update subcategories');
+      }
+    } on DioException catch (e) {
+      throw Exception('Error bulk updating subcategories: ${e.message}');
+    }
+  }
 }
 
 

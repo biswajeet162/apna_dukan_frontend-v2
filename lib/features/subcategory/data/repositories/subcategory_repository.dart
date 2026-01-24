@@ -39,4 +39,9 @@ class SubCategoryRepository implements SubCategoryRepositoryInterface {
   Future<void> deleteSubCategory(String subCategoryId) async {
     return await _remoteDataSource.deleteSubCategory(subCategoryId);
   }
+
+  @override
+  Future<List<SubCategoryAdminModel>> bulkUpdateSubCategories(Map<String, dynamic> bulkUpdateData) async {
+    return await _remoteDataSource.bulkUpdateSubCategories(bulkUpdateData);
+  }
 }

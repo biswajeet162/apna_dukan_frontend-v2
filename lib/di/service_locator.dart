@@ -27,6 +27,7 @@ import '../features/subcategory/domain/usecases/get_subcategory_by_id_usecase.da
 import '../features/subcategory/domain/usecases/create_subcategory_usecase.dart';
 import '../features/subcategory/domain/usecases/update_subcategory_usecase.dart';
 import '../features/subcategory/domain/usecases/delete_subcategory_usecase.dart';
+import '../features/subcategory/domain/usecases/bulk_update_subcategories_usecase.dart';
 import '../features/product_group/data/datasources/product_group_remote_datasource.dart';
 import '../features/product_group/data/repositories/product_group_repository.dart';
 import '../features/product_group/domain/usecases/get_product_groups_usecase.dart';
@@ -95,6 +96,7 @@ class ServiceLocator {
   late final CreateSubCategoryUseCase _createSubCategoryUseCase;
   late final UpdateSubCategoryUseCase _updateSubCategoryUseCase;
   late final DeleteSubCategoryUseCase _deleteSubCategoryUseCase;
+  late final BulkUpdateSubCategoriesUseCase _bulkUpdateSubCategoriesUseCase;
   late final GetProductGroupsUseCase _getProductGroupsUseCase;
   late final GetProductListingUseCase _getProductListingUseCase;
   late final GetProductDetailsUseCase _getProductDetailsUseCase;
@@ -147,6 +149,7 @@ class ServiceLocator {
     _createSubCategoryUseCase = CreateSubCategoryUseCase(_subCategoryRepository);
     _updateSubCategoryUseCase = UpdateSubCategoryUseCase(_subCategoryRepository);
     _deleteSubCategoryUseCase = DeleteSubCategoryUseCase(_subCategoryRepository);
+    _bulkUpdateSubCategoriesUseCase = BulkUpdateSubCategoriesUseCase(_subCategoryRepository);
     _getProductGroupsUseCase = GetProductGroupsUseCase(_productGroupRepository);
     _getProductListingUseCase = GetProductListingUseCase(_productRepository);
     _getProductDetailsUseCase = GetProductDetailsUseCase(_productRepository);
@@ -177,6 +180,7 @@ class ServiceLocator {
   CreateSubCategoryUseCase get createSubCategoryUseCase => _createSubCategoryUseCase;
   UpdateSubCategoryUseCase get updateSubCategoryUseCase => _updateSubCategoryUseCase;
   DeleteSubCategoryUseCase get deleteSubCategoryUseCase => _deleteSubCategoryUseCase;
+  BulkUpdateSubCategoriesUseCase get bulkUpdateSubCategoriesUseCase => _bulkUpdateSubCategoriesUseCase;
   GetProductGroupsUseCase get getProductGroupsUseCase => _getProductGroupsUseCase;
   GetProductListingUseCase get getProductListingUseCase => _getProductListingUseCase;
   GetProductDetailsUseCase get getProductDetailsUseCase => _getProductDetailsUseCase;

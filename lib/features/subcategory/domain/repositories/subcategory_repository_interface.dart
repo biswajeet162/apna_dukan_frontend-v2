@@ -10,6 +10,7 @@ abstract class SubCategoryRepositoryInterface {
   Future<SubCategoryAdminModel> createSubCategory(Map<String, dynamic> createData);
   Future<SubCategoryAdminModel> updateSubCategory(String subCategoryId, Map<String, dynamic> updateData);
   Future<void> deleteSubCategory(String subCategoryId);
+  Future<List<SubCategoryAdminModel>> bulkUpdateSubCategories(Map<String, dynamic> bulkUpdateData);
 }
 
 
