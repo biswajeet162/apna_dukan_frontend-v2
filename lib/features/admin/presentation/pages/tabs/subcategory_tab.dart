@@ -7,6 +7,7 @@ import '../../../../category/data/models/category_admin_model.dart';
 import '../../../../category/data/models/category_section_admin_response.dart';
 import '../../../../subcategory/data/models/subcategory_admin_model.dart';
 import '../../../../subcategory/data/models/subcategory_admin_response.dart';
+import '../widgets/subcategory_edit_modal.dart';
 
 class SubcategoryTab extends StatefulWidget {
   const SubcategoryTab({super.key});
@@ -491,6 +492,16 @@ class _SubcategoryTabState extends State<SubcategoryTab> with AutomaticKeepAlive
           trailing: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
+              if (isExpanded && !isLoading && error == null)
+                IconButton(
+                  onPressed: () => _showAddSubcategoryModal(category),
+                  icon: const Icon(Icons.add),
+                  iconSize: 20,
+                  color: Colors.blue[700],
+                  tooltip: 'Add Subcategory',
+                ),
+              if (isExpanded && !isLoading && error == null)
+                const SizedBox(width: 8),
               if (isExpanded && isLoading)
                 const SizedBox(
                   width: 16,
@@ -587,6 +598,20 @@ class _SubcategoryTabState extends State<SubcategoryTab> with AutomaticKeepAlive
   }
 
   Widget _buildSubcategoryItem(SubCategoryAdminModel subcategory) {
+    // Find the category for this subcategory
+    CategoryAdminModel? category;
+    
+    for (final section in _sections) {
+      final categories = _categoriesBySection[section.sectionId] ?? [];
+      for (final cat in categories) {
+        if (cat.categoryId == subcategory.categoryId) {
+          category = cat;
+          break;
+        }
+      }
+      if (category != null) break;
+    }
+
     return Container(
       key: ValueKey(subcategory.subCategoryId),
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
@@ -594,13 +619,9 @@ class _SubcategoryTabState extends State<SubcategoryTab> with AutomaticKeepAlive
         color: Colors.transparent,
         child: InkWell(
           onTap: () {
-            // TODO: Navigate to subcategory edit page when implemented
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text('Subcategory: ${subcategory.name}'),
-                duration: const Duration(seconds: 1),
-              ),
-            );
+            if (category != null) {
+              _showEditSubcategoryModal(category!, subcategory);
+            }
           },
           borderRadius: BorderRadius.circular(8),
           child: Container(
@@ -679,5 +700,38 @@ class _SubcategoryTabState extends State<SubcategoryTab> with AutomaticKeepAlive
         ),
       ),
     );
+  }
+
+  void _showAddSubcategoryModal(CategoryAdminModel category) {
+    final subcategories = _subcategoriesByCategory[category.categoryId] ?? [];
+    showDialog(
+      context: context,
+      builder: (context) => SubcategoryEditModal(
+        category: category,
+        existingSubcategories: subcategories,
+      ),
+    ).then((result) {
+      if (result == true) {
+        // Refresh subcategories for this category
+        _loadSubcategoriesForCategory(category.categoryId, category.sectionId, expand: true);
+      }
+    });
+  }
+
+  void _showEditSubcategoryModal(CategoryAdminModel category, SubCategoryAdminModel subcategory) {
+    final subcategories = _subcategoriesByCategory[category.categoryId] ?? [];
+    showDialog(
+      context: context,
+      builder: (context) => SubcategoryEditModal(
+        category: category,
+        existingSubcategories: subcategories,
+        subcategory: subcategory,
+      ),
+    ).then((result) {
+      if (result == true) {
+        // Refresh subcategories for this category
+        _loadSubcategoriesForCategory(category.categoryId, category.sectionId, expand: true);
+      }
+    });
   }
 }

@@ -23,6 +23,10 @@ import '../features/subcategory/data/datasources/subcategory_remote_datasource.d
 import '../features/subcategory/data/repositories/subcategory_repository.dart';
 import '../features/subcategory/domain/usecases/get_subcategories_usecase.dart';
 import '../features/subcategory/domain/usecases/get_subcategories_for_admin_usecase.dart';
+import '../features/subcategory/domain/usecases/get_subcategory_by_id_usecase.dart';
+import '../features/subcategory/domain/usecases/create_subcategory_usecase.dart';
+import '../features/subcategory/domain/usecases/update_subcategory_usecase.dart';
+import '../features/subcategory/domain/usecases/delete_subcategory_usecase.dart';
 import '../features/product_group/data/datasources/product_group_remote_datasource.dart';
 import '../features/product_group/data/repositories/product_group_repository.dart';
 import '../features/product_group/domain/usecases/get_product_groups_usecase.dart';
@@ -87,6 +91,10 @@ class ServiceLocator {
   late final BulkUpdateCategoriesUseCase _bulkUpdateCategoriesUseCase;
   late final GetSubCategoriesUseCase _getSubCategoriesUseCase;
   late final GetSubCategoriesForAdminUseCase _getSubCategoriesForAdminUseCase;
+  late final GetSubCategoryByIdUseCase _getSubCategoryByIdUseCase;
+  late final CreateSubCategoryUseCase _createSubCategoryUseCase;
+  late final UpdateSubCategoryUseCase _updateSubCategoryUseCase;
+  late final DeleteSubCategoryUseCase _deleteSubCategoryUseCase;
   late final GetProductGroupsUseCase _getProductGroupsUseCase;
   late final GetProductListingUseCase _getProductListingUseCase;
   late final GetProductDetailsUseCase _getProductDetailsUseCase;
@@ -135,6 +143,10 @@ class ServiceLocator {
     _bulkUpdateCategoriesUseCase = BulkUpdateCategoriesUseCase(_categoryRepository);
     _getSubCategoriesUseCase = GetSubCategoriesUseCase(_subCategoryRepository);
     _getSubCategoriesForAdminUseCase = GetSubCategoriesForAdminUseCase(_subCategoryRepository);
+    _getSubCategoryByIdUseCase = GetSubCategoryByIdUseCase(_subCategoryRepository);
+    _createSubCategoryUseCase = CreateSubCategoryUseCase(_subCategoryRepository);
+    _updateSubCategoryUseCase = UpdateSubCategoryUseCase(_subCategoryRepository);
+    _deleteSubCategoryUseCase = DeleteSubCategoryUseCase(_subCategoryRepository);
     _getProductGroupsUseCase = GetProductGroupsUseCase(_productGroupRepository);
     _getProductListingUseCase = GetProductListingUseCase(_productRepository);
     _getProductDetailsUseCase = GetProductDetailsUseCase(_productRepository);
@@ -161,6 +173,10 @@ class ServiceLocator {
   BulkUpdateCategoriesUseCase get bulkUpdateCategoriesUseCase => _bulkUpdateCategoriesUseCase;
   GetSubCategoriesUseCase get getSubCategoriesUseCase => _getSubCategoriesUseCase;
   GetSubCategoriesForAdminUseCase get getSubCategoriesForAdminUseCase => _getSubCategoriesForAdminUseCase;
+  GetSubCategoryByIdUseCase get getSubCategoryByIdUseCase => _getSubCategoryByIdUseCase;
+  CreateSubCategoryUseCase get createSubCategoryUseCase => _createSubCategoryUseCase;
+  UpdateSubCategoryUseCase get updateSubCategoryUseCase => _updateSubCategoryUseCase;
+  DeleteSubCategoryUseCase get deleteSubCategoryUseCase => _deleteSubCategoryUseCase;
   GetProductGroupsUseCase get getProductGroupsUseCase => _getProductGroupsUseCase;
   GetProductListingUseCase get getProductListingUseCase => _getProductListingUseCase;
   GetProductDetailsUseCase get getProductDetailsUseCase => _getProductDetailsUseCase;
