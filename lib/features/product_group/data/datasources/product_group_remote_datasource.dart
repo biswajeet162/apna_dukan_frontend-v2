@@ -106,6 +106,26 @@ class ProductGroupRemoteDataSource {
       throw Exception('Error deleting product group: ${e.message}');
     }
   }
+
+  Future<List<ProductGroupAdminModel>> bulkUpdateProductGroups(Map<String, dynamic> bulkUpdateData) async {
+    try {
+      final response = await _dioClient.dio.patch(
+        ApiEndpoints.adminProductGroupBulk,
+        data: bulkUpdateData,
+      );
+
+      if (response.statusCode == 200) {
+        final List<dynamic> data = response.data as List<dynamic>;
+        return data
+            .map((item) => ProductGroupAdminModel.fromJson(item as Map<String, dynamic>))
+            .toList();
+      } else {
+        throw Exception('Failed to bulk update product groups');
+      }
+    } on DioException catch (e) {
+      throw Exception('Error bulk updating product groups: ${e.message}');
+    }
+  }
 }
 
 

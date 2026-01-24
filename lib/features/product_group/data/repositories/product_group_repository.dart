@@ -41,6 +41,11 @@ class ProductGroupRepository implements ProductGroupRepositoryInterface {
   Future<void> deleteProductGroup(String productGroupId) async {
     return await _remoteDataSource.deleteProductGroup(productGroupId);
   }
+
+  @override
+  Future<List<ProductGroupAdminModel>> bulkUpdateProductGroups(Map<String, dynamic> bulkUpdateData) async {
+    return await _remoteDataSource.bulkUpdateProductGroups(bulkUpdateData);
+  }
 }
 
 

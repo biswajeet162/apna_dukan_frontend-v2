@@ -9,6 +9,7 @@ abstract class ProductGroupRepositoryInterface {
   Future<ProductGroupAdminModel> createProductGroup(Map<String, dynamic> createData);
   Future<ProductGroupAdminModel> updateProductGroup(String productGroupId, Map<String, dynamic> updateData);
   Future<void> deleteProductGroup(String productGroupId);
+  Future<List<ProductGroupAdminModel>> bulkUpdateProductGroups(Map<String, dynamic> bulkUpdateData);
 }
 
 

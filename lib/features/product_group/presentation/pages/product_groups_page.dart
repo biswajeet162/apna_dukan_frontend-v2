@@ -7,6 +7,8 @@ import '../../../../di/service_locator.dart';
 import '../../../../core/services/auth_service.dart';
 import '../../data/models/product_group_response.dart';
 import '../../data/models/product_group_model.dart';
+import '../../data/models/bulk_update_product_group_item.dart';
+import '../../data/models/bulk_update_product_group_request.dart';
 import '../../../product/data/models/product_listing_response.dart';
 import '../../../product/data/models/product_listing_item.dart';
 import '../../../product/presentation/widgets/product_listing_card.dart';
@@ -190,6 +192,83 @@ class _ProductGroupsPageState extends State<ProductGroupsPage> {
     });
     if (value) {
       _ensureParentIds();
+    }
+  }
+
+  Future<void> _handleReorder(int oldIndex, int newIndex) async {
+    if (!_isEditMode || _productGroupResponse == null) {
+      return;
+    }
+
+    final productGroups = List<ProductGroupModel>.from(_productGroupResponse!.productGroups);
+    if (productGroups.isEmpty) return;
+
+    if (oldIndex >= productGroups.length) {
+      return;
+    }
+
+    if (newIndex > productGroups.length) {
+      newIndex = productGroups.length;
+    }
+
+    if (newIndex > oldIndex) {
+      newIndex -= 1;
+    }
+
+    if (oldIndex == newIndex) return;
+
+    final item = productGroups.removeAt(oldIndex);
+    productGroups.insert(newIndex, item);
+
+    final bulkUpdateItems = <BulkUpdateProductGroupItem>[];
+    final updatedProductGroups = <ProductGroupModel>[];
+    for (int i = 0; i < productGroups.length; i++) {
+      final group = productGroups[i];
+      bulkUpdateItems.add(BulkUpdateProductGroupItem(
+        productGroupId: group.productGroupId,
+        displayOrder: i + 1,
+      ));
+      updatedProductGroups.add(ProductGroupModel(
+        productGroupId: group.productGroupId,
+        subCategoryId: group.subCategoryId,
+        name: group.name,
+        description: group.description,
+        code: group.code,
+        displayOrder: i + 1,
+        enabled: group.enabled,
+        imageUrl: group.imageUrl,
+      ));
+    }
+
+    setState(() {
+      _productGroupResponse = ProductGroupResponse(
+        subCategoryId: _productGroupResponse!.subCategoryId,
+        subCategoryName: _productGroupResponse!.subCategoryName,
+        productGroups: updatedProductGroups,
+      );
+      if (_selectedProductGroupId != null) {
+        final newSelectedIndex = updatedProductGroups.indexWhere(
+          (group) => group.productGroupId == _selectedProductGroupId,
+        );
+        if (newSelectedIndex >= 0) {
+          _selectedIndex = newSelectedIndex;
+        }
+      }
+    });
+
+    try {
+      final request = BulkUpdateProductGroupRequest(productGroups: bulkUpdateItems);
+      await ServiceLocator().bulkUpdateProductGroupsUseCase.call(request.toJson());
+    } catch (e) {
+      _loadProductGroups();
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error updating order: ${e.toString()}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     }
   }
 
@@ -380,45 +459,50 @@ class _ProductGroupsPageState extends State<ProductGroupsPage> {
           right: BorderSide(color: Colors.grey[300]!),
         ),
       ),
-      child: ListView.builder(
+      child: ReorderableListView.builder(
+        buildDefaultDragHandles: false,
+        onReorder: _handleReorder,
         itemCount: _productGroupResponse!.productGroups.length + 1,
         itemBuilder: (context, index) {
           final isAddItem = index == _productGroupResponse!.productGroups.length;
           if (isAddItem) {
-            return InkWell(
-              onTap: _isLoading ? null : _openAddProductGroupPage,
-              child: Container(
-                padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Container(
-                      width: 56,
-                      height: 56,
-                      alignment: Alignment.center,
-                      decoration: BoxDecoration(
-                        color: Colors.green[700],
-                        borderRadius: BorderRadius.circular(8),
+            return KeyedSubtree(
+              key: const ValueKey('add_product_group'),
+              child: InkWell(
+                onTap: _isLoading ? null : _openAddProductGroupPage,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Container(
+                        width: 56,
+                        height: 56,
+                        alignment: Alignment.center,
+                        decoration: BoxDecoration(
+                          color: Colors.green[700],
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: const Icon(
+                          Icons.add,
+                          color: Colors.white,
+                          size: 26,
+                        ),
                       ),
-                      child: const Icon(
-                        Icons.add,
-                        color: Colors.white,
-                        size: 26,
+                      const SizedBox(height: 5),
+                      Text(
+                        'Add',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.green[700],
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
-                    ),
-                    const SizedBox(height: 5),
-                    Text(
-                      'Add',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: 10,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.green[700],
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             );
@@ -431,7 +515,7 @@ class _ProductGroupsPageState extends State<ProductGroupsPage> {
               : null;
           final isDisabled = !productGroup.enabled;
 
-          return InkWell(
+          final itemContent = InkWell(
             onTap: () {
               if (_isEditMode) {
                 _openEditProductGroup(productGroup);
@@ -446,125 +530,138 @@ class _ProductGroupsPageState extends State<ProductGroupsPage> {
             child: Opacity(
               opacity: isDisabled ? 0.6 : 1,
               child: Container(
-              padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
-              decoration: BoxDecoration(
-                color: isSelected ? Colors.white : Colors.transparent,
-                border: isSelected
-                    ? Border(
-                        left: BorderSide(color: Colors.green[700]!, width: 3),
-                      )
-                    : null,
-              ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Stack(
-                    children: [
-                      Container(
-                        width: 56,
-                        height: 56,
-                        padding: const EdgeInsets.all(2),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(
-                            color: isSelected ? Colors.green[700]! : Colors.grey[300]!,
-                            width: isSelected ? 2 : 1,
+                padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
+                decoration: BoxDecoration(
+                  color: isSelected ? Colors.white : Colors.transparent,
+                  border: isSelected
+                      ? Border(
+                          left: BorderSide(color: Colors.green[700]!, width: 3),
+                        )
+                      : null,
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Stack(
+                      children: [
+                        Container(
+                          width: 56,
+                          height: 56,
+                          padding: const EdgeInsets.all(2),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(
+                              color: isSelected ? Colors.green[700]! : Colors.grey[300]!,
+                              width: isSelected ? 2 : 1,
+                            ),
                           ),
-                        ),
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(6),
-                          child: ImageFiltered(
-                            imageFilter: isDisabled
-                                ? ImageFilter.blur(sigmaX: 2.5, sigmaY: 2.5)
-                                : ImageFilter.blur(sigmaX: 0, sigmaY: 0),
-                            child: imageUrl != null
-                                ? CachedNetworkImage(
-                                    imageUrl: imageUrl,
-                                    fit: BoxFit.cover,
-                                    placeholder: (context, url) => Container(
-                                      color: Colors.grey[200],
-                                      child: const Center(
-                                        child: SizedBox(
-                                          width: 20,
-                                          height: 20,
-                                          child: CircularProgressIndicator(strokeWidth: 2),
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(6),
+                            child: ImageFiltered(
+                              imageFilter: isDisabled
+                                  ? ImageFilter.blur(sigmaX: 2.5, sigmaY: 2.5)
+                                  : ImageFilter.blur(sigmaX: 0, sigmaY: 0),
+                              child: imageUrl != null
+                                  ? CachedNetworkImage(
+                                      imageUrl: imageUrl,
+                                      fit: BoxFit.cover,
+                                      placeholder: (context, url) => Container(
+                                        color: Colors.grey[200],
+                                        child: const Center(
+                                          child: SizedBox(
+                                            width: 20,
+                                            height: 20,
+                                            child: CircularProgressIndicator(strokeWidth: 2),
+                                          ),
                                         ),
                                       ),
-                                    ),
-                                    errorWidget: (context, url, error) => Icon(
-                                      Icons.image_not_supported,
+                                      errorWidget: (context, url, error) => Icon(
+                                        Icons.image_not_supported,
+                                        color: Colors.grey[400],
+                                        size: 22,
+                                      ),
+                                    )
+                                  : Icon(
+                                      Icons.category,
                                       color: Colors.grey[400],
-                                      size: 22,
+                                      size: 26,
                                     ),
-                                  )
-                                : Icon(
-                                    Icons.category,
-                                    color: Colors.grey[400],
-                                    size: 26,
-                                  ),
+                            ),
                           ),
                         ),
-                      ),
-                      if (_isEditMode)
-                        Positioned(
-                          right: -2,
-                          bottom: -2,
-                          child: GestureDetector(
-                            onTap: () => _openEditProductGroup(productGroup),
+                        if (_isEditMode)
+                          Positioned(
+                            right: -2,
+                            bottom: -2,
+                            child: GestureDetector(
+                              onTap: () => _openEditProductGroup(productGroup),
+                              child: Container(
+                                padding: const EdgeInsets.all(4),
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(10),
+                                  border: Border.all(color: Colors.green[700]!),
+                                ),
+                                child: Icon(
+                                  Icons.edit,
+                                  size: 12,
+                                  color: Colors.green[700],
+                                ),
+                              ),
+                            ),
+                          ),
+                        if (isDisabled)
+                          Positioned(
+                            right: 0,
+                            top: 0,
                             child: Container(
-                              padding: const EdgeInsets.all(4),
+                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                               decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(10),
-                                border: Border.all(color: Colors.green[700]!),
+                                color: Colors.red[700],
+                                borderRadius: BorderRadius.circular(6),
                               ),
-                              child: Icon(
-                                Icons.edit,
-                                size: 12,
-                                color: Colors.green[700],
-                              ),
-                            ),
-                          ),
-                        ),
-                      if (isDisabled)
-                        Positioned(
-                          right: 0,
-                          top: 0,
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                            decoration: BoxDecoration(
-                              color: Colors.red[700],
-                              borderRadius: BorderRadius.circular(6),
-                            ),
-                            child: const Text(
-                              'OFF',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 8,
-                                fontWeight: FontWeight.bold,
+                              child: const Text(
+                                'OFF',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 8,
+                                  fontWeight: FontWeight.bold,
+                                ),
                               ),
                             ),
                           ),
-                        ),
-                    ],
-                  ),
-                  const SizedBox(height: 5),
-                  Text(
-                    productGroup.name,
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 10,
-                      fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                      color: isSelected ? Colors.green[700] : Colors.grey[800],
+                      ],
                     ),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ],
+                    const SizedBox(height: 5),
+                    Text(
+                      productGroup.name,
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 10,
+                        fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                        color: isSelected ? Colors.green[700] : Colors.grey[800],
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ),
               ),
             ),
-            ),
+          );
+
+          if (_isEditMode) {
+            return ReorderableDelayedDragStartListener(
+              key: ValueKey(productGroup.productGroupId),
+              index: index,
+              child: itemContent,
+            );
+          }
+
+          return KeyedSubtree(
+            key: ValueKey(productGroup.productGroupId),
+            child: itemContent,
           );
         },
       ),
