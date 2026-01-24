@@ -105,6 +105,19 @@ class AppRoutes {
     }
     return '/home/edit/section/$sectionId/category/$categoryId/Subcategory/$subCategoryId';
   }
+  static const String homeEditProductGroup = '/home/edit/section/:sectionId/category/:categoryId/Subcategory/:subCategoryId/productGroup/:productGroupId';
+  static String homeEditProductGroupWithIds(
+    String sectionId,
+    String categoryId,
+    String subCategoryId,
+    String productGroupId, {
+    String? productGroupName,
+  }) {
+    if (productGroupName != null) {
+      return '/home/edit/section/$sectionId/category/$categoryId/Subcategory/$subCategoryId/productGroup/$productGroupId?productGroupName=${Uri.encodeComponent(productGroupName)}';
+    }
+    return '/home/edit/section/$sectionId/category/$categoryId/Subcategory/$subCategoryId/productGroup/$productGroupId';
+  }
 }
 
 

@@ -12,12 +12,16 @@ class CategoriesStandalonePage extends StatefulWidget {
   final String? subCategoryId;
   final String? subCategoryName;
   final String? productId;
+  final String? categoryId;
+  final String? sectionId;
 
   const CategoriesStandalonePage({
     super.key,
     this.subCategoryId,
     this.subCategoryName,
     this.productId,
+    this.categoryId,
+    this.sectionId,
   });
 
   @override
@@ -102,6 +106,8 @@ class _CategoriesStandalonePageState extends State<CategoriesStandalonePage> {
       key: ValueKey(widget.subCategoryId), // Force rebuild when subCategoryId changes
       subCategoryId: widget.subCategoryId!,
       subCategoryName: widget.subCategoryName ?? 'Products',
+      categoryId: widget.categoryId,
+      sectionId: widget.sectionId,
       bottomNavigationBar: _isLoadingAdmin
           ? null
           : AppNavbar(

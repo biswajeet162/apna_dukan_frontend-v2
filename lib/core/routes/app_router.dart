@@ -5,6 +5,7 @@ import '../../features/home/presentation/pages/home_page.dart';
 import '../../features/home/presentation/pages/add_subcategory_page.dart';
 import '../../features/home/presentation/pages/edit_subcategory_page.dart';
 import '../../features/product_group/presentation/pages/add_product_group_page.dart';
+import '../../features/product_group/presentation/pages/edit_product_group_page.dart';
 import '../../features/splash/presentation/splash_page.dart';
 import '../../features/search/presentation/search_page.dart';
 import '../../features/auth/presentation/login/login_page.dart';
@@ -117,6 +118,33 @@ final GoRouter appRouter = GoRouter(
       },
     ),
 
+    // Edit Product Group route - /home/edit/section/:sectionId/category/:categoryId/Subcategory/:subCategoryId/productGroup/:productGroupId
+    GoRoute(
+      path: AppRoutes.homeEditProductGroup,
+      builder: (context, state) {
+        final sectionId = state.pathParameters['sectionId'];
+        final categoryId = state.pathParameters['categoryId'];
+        final subCategoryId = state.pathParameters['subCategoryId'];
+        final productGroupId = state.pathParameters['productGroupId'];
+        final productGroupName = state.uri.queryParameters['productGroupName'];
+
+        if (sectionId == null ||
+            categoryId == null ||
+            subCategoryId == null ||
+            productGroupId == null) {
+          return const HomePage();
+        }
+
+        return EditProductGroupPage(
+          sectionId: sectionId,
+          categoryId: categoryId,
+          subCategoryId: subCategoryId,
+          productGroupId: productGroupId,
+          productGroupName: productGroupName,
+        );
+      },
+    ),
+
     // Add Product Group route - /add-product-group/categories?subCategoryId=xxx
     GoRoute(
       path: AppRoutes.addProductGroupCategories,
@@ -145,6 +173,8 @@ final GoRouter appRouter = GoRouter(
         final subCategoryId = state.uri.queryParameters['subCategoryId'];
         final subCategoryNameEncoded = state.uri.queryParameters['subCategoryName'];
         final productId = state.uri.queryParameters['productId'];
+        final categoryId = state.uri.queryParameters['categoryId'];
+        final sectionId = state.uri.queryParameters['sectionId'];
         // Decode the subCategoryName (handles +, &, etc.)
         final subCategoryName = subCategoryNameEncoded != null 
             ? Uri.decodeComponent(subCategoryNameEncoded) 
@@ -158,6 +188,8 @@ final GoRouter appRouter = GoRouter(
           subCategoryId: subCategoryId,
           subCategoryName: subCategoryName,
           productId: productId,
+          categoryId: categoryId,
+          sectionId: sectionId,
         );
       },
     ),

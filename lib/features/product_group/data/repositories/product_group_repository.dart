@@ -20,8 +20,26 @@ class ProductGroupRepository implements ProductGroupRepositoryInterface {
   }
 
   @override
+  Future<ProductGroupAdminModel> getProductGroupById(String productGroupId) async {
+    return await _remoteDataSource.getProductGroupById(productGroupId);
+  }
+
+  @override
   Future<ProductGroupAdminModel> createProductGroup(Map<String, dynamic> createData) async {
     return await _remoteDataSource.createProductGroup(createData);
+  }
+
+  @override
+  Future<ProductGroupAdminModel> updateProductGroup(
+    String productGroupId,
+    Map<String, dynamic> updateData,
+  ) async {
+    return await _remoteDataSource.updateProductGroup(productGroupId, updateData);
+  }
+
+  @override
+  Future<void> deleteProductGroup(String productGroupId) async {
+    return await _remoteDataSource.deleteProductGroup(productGroupId);
   }
 }
 

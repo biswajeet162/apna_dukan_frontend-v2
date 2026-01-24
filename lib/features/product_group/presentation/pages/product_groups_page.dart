@@ -15,12 +15,16 @@ import '../../../../app/routes.dart';
 class ProductGroupsPage extends StatefulWidget {
   final String subCategoryId;
   final String subCategoryName;
+  final String? categoryId;
+  final String? sectionId;
   final Widget? bottomNavigationBar;
 
   const ProductGroupsPage({
     super.key,
     required this.subCategoryId,
     required this.subCategoryName,
+    this.categoryId,
+    this.sectionId,
     this.bottomNavigationBar,
   });
 
@@ -38,15 +42,31 @@ class _ProductGroupsPageState extends State<ProductGroupsPage> {
   int _selectedIndex = 0;
   String? _selectedProductGroupId;
   late AuthService _authService;
+  bool _isAdmin = false;
+  bool _isEditMode = false;
+  String? _sectionId;
+  String? _categoryId;
 
   @override
   void initState() {
     super.initState();
     _authService = AuthService(ServiceLocator().secureStorage);
+    _sectionId = widget.sectionId;
+    _categoryId = widget.categoryId;
+    _checkAdminStatus();
     // When route is /home/categories?subCategoryId=xxx, ALWAYS make these 2 API calls:
     // 1. Product Groups API (using subCategoryId)
     // 2. Products API (using first product group ID - default selected)
-    _loadProductGroups();
+  }
+
+  Future<void> _checkAdminStatus() async {
+    final isAdmin = await _authService.isAdmin();
+    if (mounted) {
+      setState(() {
+        _isAdmin = isAdmin;
+      });
+      _loadProductGroups();
+    }
   }
 
   Future<void> _loadProductGroups() async {
@@ -57,9 +77,8 @@ class _ProductGroupsPageState extends State<ProductGroupsPage> {
       });
 
       // API CALL #1: Load Product Groups using subCategoryId
-      final isAdmin = await _authService.isAdmin();
       final response = await ServiceLocator()
-          .getProductGroupsUseCase(widget.subCategoryId, isAdmin: isAdmin);
+          .getProductGroupsUseCase(widget.subCategoryId, isAdmin: _isAdmin);
 
       setState(() {
         _productGroupResponse = response;
@@ -109,6 +128,68 @@ class _ProductGroupsPageState extends State<ProductGroupsPage> {
 
     if (result == true) {
       _loadProductGroups();
+    }
+  }
+
+  Future<void> _ensureParentIds() async {
+    if (!_isAdmin || (_sectionId != null && _categoryId != null)) {
+      return;
+    }
+
+    try {
+      final subCategory = await ServiceLocator()
+          .getSubCategoryByIdUseCase
+          .call(widget.subCategoryId);
+      final category = await ServiceLocator()
+          .getCategoryByIdUseCase
+          .call(subCategory.categoryId);
+
+      if (mounted) {
+        setState(() {
+          _categoryId = subCategory.categoryId;
+          _sectionId = category.sectionId;
+        });
+      }
+    } catch (_) {
+      // Ignore - edit mode navigation will handle missing IDs
+    }
+  }
+
+  Future<void> _openEditProductGroup(ProductGroupModel productGroup) async {
+    await _ensureParentIds();
+
+    if (_sectionId == null || _categoryId == null) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Unable to open edit page. Missing category info.'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+      return;
+    }
+
+    final uri = AppRoutes.homeEditProductGroupWithIds(
+      _sectionId!,
+      _categoryId!,
+      widget.subCategoryId,
+      productGroup.productGroupId,
+      productGroupName: productGroup.name,
+    );
+
+    final result = await context.push<bool>(uri);
+    if (result == true) {
+      _loadProductGroups();
+    }
+  }
+
+  void _handleToggleEditMode(bool value) {
+    setState(() {
+      _isEditMode = value;
+    });
+    if (value) {
+      _ensureParentIds();
     }
   }
 
@@ -201,6 +282,28 @@ class _ProductGroupsPageState extends State<ProductGroupsPage> {
               ),
             ),
           ),
+          if (_isAdmin) ...[
+            const SizedBox(width: 8),
+            Text(
+              'Edit',
+              style: TextStyle(
+                color: Colors.white.withOpacity(0.9),
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            Transform.scale(
+              scale: 0.8,
+              child: Switch(
+                value: _isEditMode,
+                onChanged: _isLoading ? null : _handleToggleEditMode,
+                activeColor: Colors.white,
+                activeTrackColor: Colors.white.withOpacity(0.4),
+                inactiveThumbColor: Colors.white,
+                inactiveTrackColor: Colors.white.withOpacity(0.2),
+              ),
+            ),
+          ],
           IconButton(
             icon: const Icon(Icons.search, color: Colors.white),
             padding: EdgeInsets.zero,
@@ -330,6 +433,10 @@ class _ProductGroupsPageState extends State<ProductGroupsPage> {
 
           return InkWell(
             onTap: () {
+              if (_isEditMode) {
+                _openEditProductGroup(productGroup);
+                return;
+              }
               setState(() {
                 _selectedIndex = index;
                 _selectedProductGroupId = productGroup.productGroupId;
@@ -399,6 +506,27 @@ class _ProductGroupsPageState extends State<ProductGroupsPage> {
                           ),
                         ),
                       ),
+                      if (_isEditMode)
+                        Positioned(
+                          right: -2,
+                          bottom: -2,
+                          child: GestureDetector(
+                            onTap: () => _openEditProductGroup(productGroup),
+                            child: Container(
+                              padding: const EdgeInsets.all(4),
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(10),
+                                border: Border.all(color: Colors.green[700]!),
+                              ),
+                              child: Icon(
+                                Icons.edit,
+                                size: 12,
+                                color: Colors.green[700],
+                              ),
+                            ),
+                          ),
+                        ),
                       if (isDisabled)
                         Positioned(
                           right: 0,

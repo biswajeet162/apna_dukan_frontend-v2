@@ -79,13 +79,15 @@ class _HomePageState extends State<HomePage> {
       body: HomeContent(
         isAdmin: _isAdmin,
         initialEditCategoryId: widget.initialEditCategoryId,
-        onSubCategoryTap: (subCategoryId, subCategoryName) {
+        onSubCategoryTap: (subCategoryId, subCategoryName, categoryId, sectionId) {
           // Navigate to /categories route with subCategoryId
           final uri = Uri(
             path: AppRoutes.categories,
             queryParameters: {
               'subCategoryId': subCategoryId,
               'subCategoryName': subCategoryName,
+              'categoryId': categoryId,
+              'sectionId': sectionId,
             },
           );
           context.go(uri.toString());
@@ -103,7 +105,12 @@ class _HomePageState extends State<HomePage> {
 class HomeContent extends StatefulWidget {
   final bool isAdmin;
   final String? initialEditCategoryId;
-  final Function(String subCategoryId, String subCategoryName)? onSubCategoryTap;
+  final Function(
+    String subCategoryId,
+    String subCategoryName,
+    String categoryId,
+    String sectionId,
+  )? onSubCategoryTap;
 
   const HomeContent({
     super.key,
@@ -1018,8 +1025,13 @@ class _HomeContentState extends State<HomeContent> {
             ),
           );
           context.go(uri.toString());
-        } else if (!isEditMode) {
-          widget.onSubCategoryTap?.call(subCategory.subCategoryId, subCategory.name);
+        } else if (!isEditMode && category != null) {
+          widget.onSubCategoryTap?.call(
+            subCategory.subCategoryId,
+            subCategory.name,
+            category.categoryId,
+            category.sectionId,
+          );
         }
       },
       child: Column(

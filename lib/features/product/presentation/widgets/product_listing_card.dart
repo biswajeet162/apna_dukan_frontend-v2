@@ -28,6 +28,8 @@ class ProductListingCard extends StatelessWidget {
               final currentUri = GoRouterState.of(context).uri;
               final subCategoryId = currentUri.queryParameters['subCategoryId'];
               final subCategoryName = currentUri.queryParameters['subCategoryName'];
+              final categoryId = currentUri.queryParameters['categoryId'];
+              final sectionId = currentUri.queryParameters['sectionId'];
               
               // Navigate to /categories with productId added
               final uri = Uri(
@@ -35,6 +37,8 @@ class ProductListingCard extends StatelessWidget {
                 queryParameters: {
                   if (subCategoryId != null) 'subCategoryId': subCategoryId,
                   if (subCategoryName != null) 'subCategoryName': subCategoryName,
+                  if (categoryId != null) 'categoryId': categoryId,
+                  if (sectionId != null) 'sectionId': sectionId,
                   'productId': product.productId,
                 },
               );

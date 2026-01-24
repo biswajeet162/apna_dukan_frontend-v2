@@ -40,6 +40,22 @@ class ProductGroupRemoteDataSource {
     }
   }
 
+  Future<ProductGroupAdminModel> getProductGroupById(String productGroupId) async {
+    try {
+      final response = await _dioClient.dio.get(
+        ApiEndpoints.adminProductGroupById(productGroupId),
+      );
+
+      if (response.statusCode == 200) {
+        return ProductGroupAdminModel.fromJson(response.data as Map<String, dynamic>);
+      } else {
+        throw Exception('Failed to load product group');
+      }
+    } on DioException catch (e) {
+      throw Exception('Error fetching product group: ${e.message}');
+    }
+  }
+
   Future<ProductGroupAdminModel> createProductGroup(Map<String, dynamic> createData) async {
     try {
       final response = await _dioClient.dio.post(
@@ -54,6 +70,40 @@ class ProductGroupRemoteDataSource {
       }
     } on DioException catch (e) {
       throw Exception('Error creating product group: ${e.message}');
+    }
+  }
+
+  Future<ProductGroupAdminModel> updateProductGroup(
+    String productGroupId,
+    Map<String, dynamic> updateData,
+  ) async {
+    try {
+      final response = await _dioClient.dio.put(
+        ApiEndpoints.adminProductGroupById(productGroupId),
+        data: updateData,
+      );
+
+      if (response.statusCode == 200) {
+        return ProductGroupAdminModel.fromJson(response.data as Map<String, dynamic>);
+      } else {
+        throw Exception('Failed to update product group');
+      }
+    } on DioException catch (e) {
+      throw Exception('Error updating product group: ${e.message}');
+    }
+  }
+
+  Future<void> deleteProductGroup(String productGroupId) async {
+    try {
+      final response = await _dioClient.dio.delete(
+        ApiEndpoints.adminProductGroupById(productGroupId),
+      );
+
+      if (response.statusCode != 204) {
+        throw Exception('Failed to delete product group');
+      }
+    } on DioException catch (e) {
+      throw Exception('Error deleting product group: ${e.message}');
     }
   }
 }
