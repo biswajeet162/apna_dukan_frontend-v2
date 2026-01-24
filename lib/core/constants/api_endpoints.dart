@@ -25,6 +25,14 @@ class ApiEndpoints {
   static const String adminSubCategoryCreate = '/v1/admin/category/subCategory';
   static const String adminSubCategoryBulk = '/v1/admin/category/subCategory/bulk';
 
+  // Admin product group endpoints
+  static String adminProductGroupsForSubCategory(String subCategoryId) =>
+      '/v1/admin/subCategory/$subCategoryId/productGroups';
+  static String adminProductGroupById(String productGroupId) =>
+      '/v1/admin/subCategory/productGroup/$productGroupId';
+  static const String adminProductGroupCreate = '/v1/admin/subCategory/productGroup';
+  static const String adminProductGroupBulk = '/v1/admin/subCategory/productGroup/bulk';
+
   // Auth endpoints
   static const String login = '/auth/login';
   static const String signup = '/auth/register';

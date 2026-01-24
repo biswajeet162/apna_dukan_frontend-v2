@@ -31,6 +31,7 @@ import '../features/subcategory/domain/usecases/bulk_update_subcategories_usecas
 import '../features/product_group/data/datasources/product_group_remote_datasource.dart';
 import '../features/product_group/data/repositories/product_group_repository.dart';
 import '../features/product_group/domain/usecases/get_product_groups_usecase.dart';
+import '../features/product_group/domain/usecases/create_product_group_usecase.dart';
 import '../features/product/data/datasources/product_listing_remote_datasource.dart';
 import '../features/product/data/repositories/product_repository.dart';
 import '../features/product/domain/usecases/get_product_listing_usecase.dart';
@@ -98,6 +99,7 @@ class ServiceLocator {
   late final DeleteSubCategoryUseCase _deleteSubCategoryUseCase;
   late final BulkUpdateSubCategoriesUseCase _bulkUpdateSubCategoriesUseCase;
   late final GetProductGroupsUseCase _getProductGroupsUseCase;
+  late final CreateProductGroupUseCase _createProductGroupUseCase;
   late final GetProductListingUseCase _getProductListingUseCase;
   late final GetProductDetailsUseCase _getProductDetailsUseCase;
   late final LoginUseCase _loginUseCase;
@@ -151,6 +153,7 @@ class ServiceLocator {
     _deleteSubCategoryUseCase = DeleteSubCategoryUseCase(_subCategoryRepository);
     _bulkUpdateSubCategoriesUseCase = BulkUpdateSubCategoriesUseCase(_subCategoryRepository);
     _getProductGroupsUseCase = GetProductGroupsUseCase(_productGroupRepository);
+    _createProductGroupUseCase = CreateProductGroupUseCase(_productGroupRepository);
     _getProductListingUseCase = GetProductListingUseCase(_productRepository);
     _getProductDetailsUseCase = GetProductDetailsUseCase(_productRepository);
     _loginUseCase = LoginUseCase(_authRepository);
@@ -182,6 +185,7 @@ class ServiceLocator {
   DeleteSubCategoryUseCase get deleteSubCategoryUseCase => _deleteSubCategoryUseCase;
   BulkUpdateSubCategoriesUseCase get bulkUpdateSubCategoriesUseCase => _bulkUpdateSubCategoriesUseCase;
   GetProductGroupsUseCase get getProductGroupsUseCase => _getProductGroupsUseCase;
+  CreateProductGroupUseCase get createProductGroupUseCase => _createProductGroupUseCase;
   GetProductListingUseCase get getProductListingUseCase => _getProductListingUseCase;
   GetProductDetailsUseCase get getProductDetailsUseCase => _getProductDetailsUseCase;
   HomeRepository get homeRepository => _homeRepository;

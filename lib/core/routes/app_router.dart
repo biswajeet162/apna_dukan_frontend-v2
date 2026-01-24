@@ -4,6 +4,7 @@ import '../../app/routes.dart';
 import '../../features/home/presentation/pages/home_page.dart';
 import '../../features/home/presentation/pages/add_subcategory_page.dart';
 import '../../features/home/presentation/pages/edit_subcategory_page.dart';
+import '../../features/product_group/presentation/pages/add_product_group_page.dart';
 import '../../features/splash/presentation/splash_page.dart';
 import '../../features/search/presentation/search_page.dart';
 import '../../features/auth/presentation/login/login_page.dart';
@@ -110,6 +111,27 @@ final GoRouter appRouter = GoRouter(
         return EditSubcategoryPage(
           sectionId: sectionId,
           categoryId: categoryId,
+          subCategoryId: subCategoryId,
+          subCategoryName: subCategoryName,
+        );
+      },
+    ),
+
+    // Add Product Group route - /add-product-group/categories?subCategoryId=xxx
+    GoRoute(
+      path: AppRoutes.addProductGroupCategories,
+      builder: (context, state) {
+        final subCategoryId = state.uri.queryParameters['subCategoryId'];
+        final subCategoryNameEncoded = state.uri.queryParameters['subCategoryName'];
+        final subCategoryName = subCategoryNameEncoded != null
+            ? Uri.decodeComponent(subCategoryNameEncoded)
+            : null;
+
+        if (subCategoryId == null || subCategoryId.isEmpty) {
+          return const HomePage();
+        }
+
+        return AddProductGroupPage(
           subCategoryId: subCategoryId,
           subCategoryName: subCategoryName,
         );

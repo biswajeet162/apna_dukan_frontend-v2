@@ -7,7 +7,10 @@ class GetProductGroupsUseCase {
 
   GetProductGroupsUseCase(this._repository);
 
-  Future<ProductGroupResponse> call(String subCategoryId) async {
+  Future<ProductGroupResponse> call(String subCategoryId, {bool isAdmin = false}) async {
+    if (isAdmin) {
+      return await _repository.getProductGroupsForSubCategoryAdmin(subCategoryId);
+    }
     return await _repository.getProductGroupsForSubCategory(subCategoryId);
   }
 }

@@ -1,8 +1,10 @@
 // Product Groups Page - Shows product groups for a subcategory
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../../../../di/service_locator.dart';
+import '../../../../core/services/auth_service.dart';
 import '../../data/models/product_group_response.dart';
 import '../../data/models/product_group_model.dart';
 import '../../../product/data/models/product_listing_response.dart';
@@ -35,10 +37,12 @@ class _ProductGroupsPageState extends State<ProductGroupsPage> {
   String? _productErrorMessage;
   int _selectedIndex = 0;
   String? _selectedProductGroupId;
+  late AuthService _authService;
 
   @override
   void initState() {
     super.initState();
+    _authService = AuthService(ServiceLocator().secureStorage);
     // When route is /home/categories?subCategoryId=xxx, ALWAYS make these 2 API calls:
     // 1. Product Groups API (using subCategoryId)
     // 2. Products API (using first product group ID - default selected)
@@ -53,7 +57,9 @@ class _ProductGroupsPageState extends State<ProductGroupsPage> {
       });
 
       // API CALL #1: Load Product Groups using subCategoryId
-      final response = await ServiceLocator().getProductGroupsUseCase(widget.subCategoryId);
+      final isAdmin = await _authService.isAdmin();
+      final response = await ServiceLocator()
+          .getProductGroupsUseCase(widget.subCategoryId, isAdmin: isAdmin);
 
       setState(() {
         _productGroupResponse = response;
@@ -93,6 +99,16 @@ class _ProductGroupsPageState extends State<ProductGroupsPage> {
         _productErrorMessage = e.toString();
         _isLoadingProducts = false;
       });
+    }
+  }
+
+  Future<void> _openAddProductGroupPage() async {
+    final result = await context.push<bool>(
+      '${AppRoutes.addProductGroupCategories}?subCategoryId=${widget.subCategoryId}&subCategoryName=${Uri.encodeComponent(widget.subCategoryName)}',
+    );
+
+    if (result == true) {
+      _loadProductGroups();
     }
   }
 
@@ -262,13 +278,55 @@ class _ProductGroupsPageState extends State<ProductGroupsPage> {
         ),
       ),
       child: ListView.builder(
-        itemCount: _productGroupResponse!.productGroups.length,
+        itemCount: _productGroupResponse!.productGroups.length + 1,
         itemBuilder: (context, index) {
+          final isAddItem = index == _productGroupResponse!.productGroups.length;
+          if (isAddItem) {
+            return InkWell(
+              onTap: _isLoading ? null : _openAddProductGroupPage,
+              child: Container(
+                padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      width: 56,
+                      height: 56,
+                      alignment: Alignment.center,
+                      decoration: BoxDecoration(
+                        color: Colors.green[700],
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: const Icon(
+                        Icons.add,
+                        color: Colors.white,
+                        size: 26,
+                      ),
+                    ),
+                    const SizedBox(height: 5),
+                    Text(
+                      'Add',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.green[700],
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ),
+              ),
+            );
+          }
+
           final productGroup = _productGroupResponse!.productGroups[index];
           final isSelected = _selectedIndex == index;
           final imageUrl = productGroup.imageUrl.isNotEmpty
               ? productGroup.imageUrl.first
               : null;
+          final isDisabled = !productGroup.enabled;
 
           return InkWell(
             onTap: () {
@@ -278,7 +336,9 @@ class _ProductGroupsPageState extends State<ProductGroupsPage> {
               });
               _loadProducts(productGroup.productGroupId);
             },
-            child: Container(
+            child: Opacity(
+              opacity: isDisabled ? 0.6 : 1,
+              child: Container(
               padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
               decoration: BoxDecoration(
                 color: isSelected ? Colors.white : Colors.transparent,
@@ -291,46 +351,75 @@ class _ProductGroupsPageState extends State<ProductGroupsPage> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Container(
-                    width: 56,
-                    height: 56,
-                    padding: const EdgeInsets.all(2),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(
-                        color: isSelected ? Colors.green[700]! : Colors.grey[300]!,
-                        width: isSelected ? 2 : 1,
-                      ),
-                    ),
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(6),
-                      child: imageUrl != null
-                          ? CachedNetworkImage(
-                              imageUrl: imageUrl,
-                              fit: BoxFit.cover,
-                              placeholder: (context, url) => Container(
-                                color: Colors.grey[200],
-                                child: const Center(
-                                  child: SizedBox(
-                                    width: 20,
-                                    height: 20,
-                                    child: CircularProgressIndicator(strokeWidth: 2),
+                  Stack(
+                    children: [
+                      Container(
+                        width: 56,
+                        height: 56,
+                        padding: const EdgeInsets.all(2),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(
+                            color: isSelected ? Colors.green[700]! : Colors.grey[300]!,
+                            width: isSelected ? 2 : 1,
+                          ),
+                        ),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(6),
+                          child: ImageFiltered(
+                            imageFilter: isDisabled
+                                ? ImageFilter.blur(sigmaX: 2.5, sigmaY: 2.5)
+                                : ImageFilter.blur(sigmaX: 0, sigmaY: 0),
+                            child: imageUrl != null
+                                ? CachedNetworkImage(
+                                    imageUrl: imageUrl,
+                                    fit: BoxFit.cover,
+                                    placeholder: (context, url) => Container(
+                                      color: Colors.grey[200],
+                                      child: const Center(
+                                        child: SizedBox(
+                                          width: 20,
+                                          height: 20,
+                                          child: CircularProgressIndicator(strokeWidth: 2),
+                                        ),
+                                      ),
+                                    ),
+                                    errorWidget: (context, url, error) => Icon(
+                                      Icons.image_not_supported,
+                                      color: Colors.grey[400],
+                                      size: 22,
+                                    ),
+                                  )
+                                : Icon(
+                                    Icons.category,
+                                    color: Colors.grey[400],
+                                    size: 26,
                                   ),
-                                ),
-                              ),
-                              errorWidget: (context, url, error) => Icon(
-                                Icons.image_not_supported,
-                                color: Colors.grey[400],
-                                size: 22,
-                              ),
-                            )
-                          : Icon(
-                              Icons.category,
-                              color: Colors.grey[400],
-                              size: 26,
+                          ),
+                        ),
+                      ),
+                      if (isDisabled)
+                        Positioned(
+                          right: 0,
+                          top: 0,
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: Colors.red[700],
+                              borderRadius: BorderRadius.circular(6),
                             ),
-                    ),
+                            child: const Text(
+                              'OFF',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 8,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ),
+                    ],
                   ),
                   const SizedBox(height: 5),
                   Text(
@@ -346,6 +435,7 @@ class _ProductGroupsPageState extends State<ProductGroupsPage> {
                   ),
                 ],
               ),
+            ),
             ),
           );
         },

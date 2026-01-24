@@ -27,6 +27,7 @@ class AppRoutes {
   static const String productGroups = '/product-groups';
   static const String productGroup = '/product-group/:groupId';
   static String productGroupWithId(String groupId) => '/product-group/$groupId';
+  static const String addProductGroupCategories = '/add-product-group/categories';
   
   // Search routes
   static const String search = '/search';
