@@ -105,6 +105,7 @@ class _HomeContentState extends State<HomeContent> {
   CategorySectionResponse? _categorySectionResponse;
   Map<String, SubCategoryResponse> _subCategoriesMap = {}; // categoryId -> SubCategoryResponse
   Map<String, bool> _loadingSubCategories = {}; // categoryId -> isLoading
+  String? _activeEditCategoryId; // Only one category can be in edit mode at a time
   bool _isLoading = true;
   bool _isLoadingCategories = false;
   String? _errorMessage;
@@ -210,6 +211,75 @@ class _HomeContentState extends State<HomeContent> {
       },
     );
     context.go(uri.toString());
+  }
+
+  Future<void> _handleReorder(
+    String categoryId,
+    int oldIndex,
+    int newIndex,
+  ) async {
+    if (oldIndex == newIndex) return;
+
+    final subCategoryResponse = _subCategoriesMap[categoryId];
+    if (subCategoryResponse == null) return;
+
+    final subCategories = List<SubCategoryModel>.from(subCategoryResponse.subCategories)
+      ..sort((a, b) => a.displayOrder.compareTo(b.displayOrder));
+
+    // Reorder the list
+    if (newIndex > oldIndex) {
+      newIndex -= 1;
+    }
+    final item = subCategories.removeAt(oldIndex);
+    subCategories.insert(newIndex, item);
+
+    // Update displayOrder for all items
+    final updatedSubCategories = <SubCategoryModel>[];
+    for (int i = 0; i < subCategories.length; i++) {
+      final subCat = subCategories[i];
+      updatedSubCategories.add(SubCategoryModel(
+        subCategoryId: subCat.subCategoryId,
+        categoryId: subCat.categoryId,
+        name: subCat.name,
+        description: subCat.description,
+        code: subCat.code,
+        displayOrder: i + 1,
+        enabled: subCat.enabled,
+        imageUrl: subCat.imageUrl,
+      ));
+    }
+
+    // Update local state immediately
+    setState(() {
+      _subCategoriesMap[categoryId] = SubCategoryResponse(
+        categoryId: categoryId,
+        categoryName: subCategoryResponse.categoryName,
+        subCategories: updatedSubCategories,
+      );
+    });
+
+    // Update displayOrder via API
+    try {
+      for (final subCat in updatedSubCategories) {
+        await ServiceLocator().updateSubCategoryUseCase.call(
+          subCat.subCategoryId,
+          {
+            'displayOrder': subCat.displayOrder,
+          },
+        );
+      }
+    } catch (e) {
+      // If API call fails, reload subcategories to restore original order
+      _loadSubCategories(categoryId);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error updating order: ${e.toString()}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
   }
 
   @override
@@ -499,16 +569,52 @@ class _HomeContentState extends State<HomeContent> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Category Title
+          // Category Title with Edit Toggle Button
           Padding(
-            padding: const EdgeInsets.only(left: 8),
-            child: Text(
-              category.name,
-              style: TextStyle(
-                fontSize: 18,
-                color: Colors.grey[800],
-                fontWeight: FontWeight.w900,
-              ),
+            padding: const EdgeInsets.only(left: 8, right: 8),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Expanded(
+                  child: Text(
+                    category.name,
+                    style: TextStyle(
+                      fontSize: 18,
+                      color: Colors.grey[800],
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
+                ),
+                if (widget.isAdmin)
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        'Edit',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Colors.grey[700],
+                        ),
+                      ),
+                      const SizedBox(width: 4),
+                      Switch(
+                        value: _activeEditCategoryId == category.categoryId,
+                        onChanged: (value) {
+                          setState(() {
+                            if (value) {
+                              // Toggle on - enter edit mode (this will disable any other active edit mode)
+                              _activeEditCategoryId = category.categoryId;
+                            } else {
+                              // Toggle off - exit edit mode
+                              _activeEditCategoryId = null;
+                            }
+                          });
+                        },
+                        activeColor: Colors.green[700],
+                      ),
+                    ],
+                  ),
+              ],
             ),
           ),
           const SizedBox(height: 8),
@@ -528,6 +634,7 @@ class _HomeContentState extends State<HomeContent> {
               layoutType,
               scrollType,
               category,
+              _activeEditCategoryId == category.categoryId,
             )
           else if (subCategoryResponse != null && subCategoryResponse.subCategories.isEmpty)
             widget.isAdmin
@@ -566,6 +673,7 @@ class _HomeContentState extends State<HomeContent> {
     LayoutType layoutType,
     ScrollType scrollType,
     CategoryModel category,
+    bool isEditMode,
   ) {
     // Sort by displayOrder
     final sortedSubCategories = List<SubCategoryModel>.from(subCategories)
@@ -596,14 +704,53 @@ class _HomeContentState extends State<HomeContent> {
               onTap: () => _navigateToAddSubcategory(category),
             );
           }
-          return _buildSubCategoryCard(sortedSubCategories[index]);
+          final subCategory = sortedSubCategories[index];
+          final card = _buildSubCategoryCard(
+            subCategory,
+            isEditMode: isEditMode,
+            category: category,
+            index: index,
+          );
+          
+          if (isEditMode) {
+            return LongPressDraggable<int>(
+              key: ValueKey(subCategory.subCategoryId),
+              data: index,
+              feedback: Material(
+                elevation: 6,
+                borderRadius: BorderRadius.circular(12),
+                child: Opacity(
+                  opacity: 0.8,
+                  child: card,
+                ),
+              ),
+              childWhenDragging: Opacity(
+                opacity: 0.3,
+                child: card,
+              ),
+              onDragEnd: (details) {
+                // Drag ended, but we handle reorder in DragTarget
+              },
+              child: DragTarget<int>(
+                onAccept: (draggedIndex) {
+                  if (draggedIndex != index) {
+                    _handleReorder(category.categoryId, draggedIndex, index);
+                  }
+                },
+                builder: (context, candidateData, rejectedData) {
+                  return card;
+                },
+              ),
+            );
+          }
+          return card;
         },
       );
     }
     
     // If less than 5 items (and not 3 or 4), show in single line horizontal
     if (itemCount < 5) {
-      return _buildSingleLineHorizontal(sortedSubCategories, category);
+      return _buildSingleLineHorizontal(sortedSubCategories, category, isEditMode);
     }
 
     // Grid layout with 4 items per row
@@ -629,12 +776,55 @@ class _HomeContentState extends State<HomeContent> {
             onTap: () => _navigateToAddSubcategory(category),
           );
         }
-        return _buildSubCategoryCard(sortedSubCategories[index]);
+        final subCategory = sortedSubCategories[index];
+        final card = _buildSubCategoryCard(
+          subCategory,
+          isEditMode: isEditMode,
+          category: category,
+          index: index,
+        );
+        
+        if (isEditMode) {
+          return LongPressDraggable<int>(
+            key: ValueKey(subCategory.subCategoryId),
+            data: index,
+            feedback: Material(
+              elevation: 6,
+              borderRadius: BorderRadius.circular(12),
+              child: Opacity(
+                opacity: 0.8,
+                child: card,
+              ),
+            ),
+            childWhenDragging: Opacity(
+              opacity: 0.3,
+              child: card,
+            ),
+            onDragEnd: (details) {
+              // Drag ended, but we handle reorder in DragTarget
+            },
+            child: DragTarget<int>(
+              onAccept: (draggedIndex) {
+                if (draggedIndex != index) {
+                  _handleReorder(category.categoryId, draggedIndex, index);
+                }
+              },
+              builder: (context, candidateData, rejectedData) {
+                return card;
+              },
+            ),
+          );
+        }
+        return card;
       },
     );
   }
 
-  Widget _buildSingleLineHorizontal(List<SubCategoryModel> subCategories, CategoryModel category) {
+  Widget _buildSingleLineHorizontal(
+    List<SubCategoryModel> subCategories,
+    CategoryModel category,
+    bool isEditMode,
+  ) {
     const spacing = 8.0;
     final screenWidth = MediaQuery.of(context).size.width;
     const padding = 16.0; // 8 on each side
@@ -655,17 +845,54 @@ class _HomeContentState extends State<HomeContent> {
           width: totalWidth,
           child: Row(
             children: [
-              ...subCategories.map((subCategory) {
-                return Padding(
+              ...subCategories.asMap().entries.map((entry) {
+                final index = entry.key;
+                final subCategory = entry.value;
+                final card = Padding(
                   padding: EdgeInsets.only(
                     right: spacing,
                   ),
                   child: SizedBox(
                     width: itemWidth,
                     height: itemHeight,
-                    child: _buildSubCategoryCard(subCategory),
+                    child: _buildSubCategoryCard(
+                      subCategory,
+                      isEditMode: isEditMode,
+                      category: category,
+                      index: index,
+                    ),
                   ),
                 );
+                
+                if (isEditMode) {
+                  return LongPressDraggable<int>(
+                    key: ValueKey(subCategory.subCategoryId),
+                    data: index,
+                    feedback: Material(
+                      elevation: 6,
+                      borderRadius: BorderRadius.circular(12),
+                      child: Opacity(
+                        opacity: 0.8,
+                        child: card,
+                      ),
+                    ),
+                    childWhenDragging: Opacity(
+                      opacity: 0.3,
+                      child: card,
+                    ),
+                    child: DragTarget<int>(
+                      onAccept: (draggedIndex) {
+                        if (draggedIndex != index) {
+                          _handleReorder(category.categoryId, draggedIndex, index);
+                        }
+                      },
+                      builder: (context, candidateData, rejectedData) {
+                        return card;
+                      },
+                    ),
+                  );
+                }
+                return card;
               }),
               if (shouldShowAddButton)
                 SizedBox(
@@ -682,14 +909,21 @@ class _HomeContentState extends State<HomeContent> {
     );
   }
 
-  Widget _buildSubCategoryCard(SubCategoryModel subCategory) {
+  Widget _buildSubCategoryCard(
+    SubCategoryModel subCategory, {
+    bool isEditMode = false,
+    CategoryModel? category,
+    int? index,
+  }) {
     final imageUrl = subCategory.imageUrl.isNotEmpty
         ? subCategory.imageUrl.first
         : null;
 
     return GestureDetector(
       onTap: () {
-        widget.onSubCategoryTap?.call(subCategory.subCategoryId, subCategory.name);
+        if (!isEditMode) {
+          widget.onSubCategoryTap?.call(subCategory.subCategoryId, subCategory.name);
+        }
       },
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -697,48 +931,72 @@ class _HomeContentState extends State<HomeContent> {
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           // Image Container with green background - ONLY contains the image
-          Container(
-            width: 90,
-            height: 90,
-            decoration: BoxDecoration(
-              color: Colors.green[50],
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Padding(
-              padding: const EdgeInsets.all(4.0),
-              child: Container(
-                width: double.infinity,
-                height: double.infinity,
+          Stack(
+            children: [
+              Container(
+                width: 90,
+                height: 90,
                 decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(8),
+                  color: Colors.green[50],
+                  borderRadius: BorderRadius.circular(12),
                 ),
-                child: imageUrl != null
-                    ? ClipRRect(
-                        borderRadius: BorderRadius.circular(8),
-                        child: CachedNetworkImage(
-                          imageUrl: imageUrl,
-                          fit: BoxFit.cover,
-                          placeholder: (context, url) => Container(
-                            color: Colors.grey[200],
-                            child: const Center(
-                              child: CircularProgressIndicator(strokeWidth: 2),
+                child: Padding(
+                  padding: const EdgeInsets.all(4.0),
+                  child: Container(
+                    width: double.infinity,
+                    height: double.infinity,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: imageUrl != null
+                        ? ClipRRect(
+                            borderRadius: BorderRadius.circular(8),
+                            child: CachedNetworkImage(
+                              imageUrl: imageUrl,
+                              fit: BoxFit.cover,
+                              placeholder: (context, url) => Container(
+                                color: Colors.grey[200],
+                                child: const Center(
+                                  child: CircularProgressIndicator(strokeWidth: 2),
+                                ),
+                              ),
+                              errorWidget: (context, url, error) => Icon(
+                                Icons.image_not_supported,
+                                color: Colors.grey[400],
+                                size: 52,
+                              ),
                             ),
-                          ),
-                          errorWidget: (context, url, error) => Icon(
-                            Icons.image_not_supported,
-                            color: Colors.grey[400],
+                          )
+                        : Icon(
+                            Icons.category,
+                            color: Colors.green[700],
                             size: 52,
                           ),
-                        ),
-                      )
-                    : Icon(
-                        Icons.category,
-                        color: Colors.green[700],
-                        size: 52,
-                      ),
+                  ),
+                ),
               ),
-            ),
+              // Pencil icon in edit mode - top right corner
+              if (isEditMode)
+                Positioned(
+                  top: 0,
+                  right: 0,
+                  child: Container(
+                    width: 24,
+                    height: 24,
+                    decoration: BoxDecoration(
+                      color: Colors.green[700],
+                      shape: BoxShape.circle,
+                      border: Border.all(color: Colors.white, width: 2),
+                    ),
+                    child: const Icon(
+                      Icons.edit,
+                      color: Colors.white,
+                      size: 14,
+                    ),
+                  ),
+                ),
+            ],
           ),
           const SizedBox(height: 6),
           // Subcategory Name - Completely outside the green box
