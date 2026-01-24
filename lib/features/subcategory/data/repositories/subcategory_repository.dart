@@ -1,5 +1,6 @@
 // SubCategory Repository
 import '../models/subcategory_response.dart';
+import '../models/subcategory_admin_response.dart';
 import '../datasources/subcategory_remote_datasource.dart';
 import '../../domain/repositories/subcategory_repository_interface.dart';
 
@@ -11,5 +12,10 @@ class SubCategoryRepository implements SubCategoryRepositoryInterface {
   @override
   Future<SubCategoryResponse> getSubCategoriesForCategory(String categoryId) async {
     return await _remoteDataSource.getSubCategoriesForCategory(categoryId);
+  }
+
+  @override
+  Future<SubCategoryAdminResponse> getSubCategoriesForAdmin(String categoryId) async {
+    return await _remoteDataSource.getSubCategoriesForAdmin(categoryId);
   }
 }

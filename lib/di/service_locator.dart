@@ -22,6 +22,7 @@ import '../features/category/domain/usecases/bulk_update_categories_usecase.dart
 import '../features/subcategory/data/datasources/subcategory_remote_datasource.dart';
 import '../features/subcategory/data/repositories/subcategory_repository.dart';
 import '../features/subcategory/domain/usecases/get_subcategories_usecase.dart';
+import '../features/subcategory/domain/usecases/get_subcategories_for_admin_usecase.dart';
 import '../features/product_group/data/datasources/product_group_remote_datasource.dart';
 import '../features/product_group/data/repositories/product_group_repository.dart';
 import '../features/product_group/domain/usecases/get_product_groups_usecase.dart';
@@ -85,6 +86,7 @@ class ServiceLocator {
   late final DeleteCategoryUseCase _deleteCategoryUseCase;
   late final BulkUpdateCategoriesUseCase _bulkUpdateCategoriesUseCase;
   late final GetSubCategoriesUseCase _getSubCategoriesUseCase;
+  late final GetSubCategoriesForAdminUseCase _getSubCategoriesForAdminUseCase;
   late final GetProductGroupsUseCase _getProductGroupsUseCase;
   late final GetProductListingUseCase _getProductListingUseCase;
   late final GetProductDetailsUseCase _getProductDetailsUseCase;
@@ -132,6 +134,7 @@ class ServiceLocator {
     _deleteCategoryUseCase = DeleteCategoryUseCase(_categoryRepository);
     _bulkUpdateCategoriesUseCase = BulkUpdateCategoriesUseCase(_categoryRepository);
     _getSubCategoriesUseCase = GetSubCategoriesUseCase(_subCategoryRepository);
+    _getSubCategoriesForAdminUseCase = GetSubCategoriesForAdminUseCase(_subCategoryRepository);
     _getProductGroupsUseCase = GetProductGroupsUseCase(_productGroupRepository);
     _getProductListingUseCase = GetProductListingUseCase(_productRepository);
     _getProductDetailsUseCase = GetProductDetailsUseCase(_productRepository);
@@ -157,6 +160,7 @@ class ServiceLocator {
   DeleteCategoryUseCase get deleteCategoryUseCase => _deleteCategoryUseCase;
   BulkUpdateCategoriesUseCase get bulkUpdateCategoriesUseCase => _bulkUpdateCategoriesUseCase;
   GetSubCategoriesUseCase get getSubCategoriesUseCase => _getSubCategoriesUseCase;
+  GetSubCategoriesForAdminUseCase get getSubCategoriesForAdminUseCase => _getSubCategoriesForAdminUseCase;
   GetProductGroupsUseCase get getProductGroupsUseCase => _getProductGroupsUseCase;
   GetProductListingUseCase get getProductListingUseCase => _getProductListingUseCase;
   GetProductDetailsUseCase get getProductDetailsUseCase => _getProductDetailsUseCase;
