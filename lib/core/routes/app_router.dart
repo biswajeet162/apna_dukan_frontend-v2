@@ -37,6 +37,7 @@ import '../../features/admin/presentation/pages/admin_dashboard_page.dart';
 import '../../features/admin/presentation/pages/layout_edit_page.dart';
 import '../../features/admin/presentation/pages/layout_add_page.dart';
 import '../../features/admin/presentation/pages/category_edit_page.dart';
+import '../../features/admin/presentation/pages/category_add_page.dart';
 
 final GoRouter appRouter = GoRouter(
   initialLocation: AppRoutes.home,
@@ -308,10 +309,24 @@ final GoRouter appRouter = GoRouter(
         return CategoryEditPage(categoryId: categoryId);
       },
     ),
+    GoRoute(
+      path: AppRoutes.adminCategoryAdd,
+      builder: (context, state) {
+        final categoryId = state.pathParameters['categoryId']!;
+        return CategoryAddPage(categoryId: categoryId);
+      },
+    ),
     // Less specific routes after (tab routes)
     GoRoute(
       path: AppRoutes.adminDashboardLayout,
       builder: (context, state) => const AdminDashboardPage(tab: 'layout'),
+    ),
+    GoRoute(
+      path: AppRoutes.adminDashboardCategoryWithCategory,
+      builder: (context, state) {
+        final categoryId = state.pathParameters['categoryId'];
+        return AdminDashboardPage(tab: 'category', categoryId: categoryId);
+      },
     ),
     GoRoute(
       path: AppRoutes.adminDashboardCategory,

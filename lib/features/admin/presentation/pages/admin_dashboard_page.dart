@@ -12,10 +12,12 @@ import 'tabs/product_group_tab.dart';
 
 class AdminDashboardPage extends StatefulWidget {
   final String? tab;
+  final String? categoryId;
 
   const AdminDashboardPage({
     super.key,
     this.tab,
+    this.categoryId,
   });
 
   @override
@@ -312,7 +314,10 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
       case 'layout':
         return const LayoutTab(key: ValueKey('layout_tab'));
       case 'category':
-        return const CategoryTab(key: ValueKey('category_tab'));
+        return CategoryTab(
+          key: const ValueKey('category_tab'),
+          initialCategoryId: widget.categoryId,
+        );
       case 'subcategory':
         return const SubcategoryTab(key: ValueKey('subcategory_tab'));
       case 'product':

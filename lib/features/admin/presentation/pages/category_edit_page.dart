@@ -103,7 +103,10 @@ class _CategoryEditPageState extends State<CategoryEditPage> {
             backgroundColor: Colors.green,
           ),
         );
-        context.pop(true); // Return true to indicate success
+        // Navigate back to category list with categoryId in URL
+        if (mounted) {
+          context.go(AppRoutes.adminDashboardCategoryWithCategoryId(widget.categoryId));
+        }
       }
     } catch (e) {
       setState(() {
@@ -166,7 +169,10 @@ class _CategoryEditPageState extends State<CategoryEditPage> {
             backgroundColor: Colors.green,
           ),
         );
-        context.pop(true); // Return true to indicate deletion
+        // Navigate back to category list (without categoryId since it was deleted)
+        if (mounted) {
+          context.go(AppRoutes.adminDashboardCategory);
+        }
       }
     } catch (e) {
       setState(() {
@@ -188,6 +194,14 @@ class _CategoryEditPageState extends State<CategoryEditPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () {
+            // Navigate back to category list with categoryId in URL
+            context.go(AppRoutes.adminDashboardCategoryWithCategoryId(widget.categoryId));
+          },
+          tooltip: 'Back',
+        ),
         title: const Text('Edit Category'),
         backgroundColor: Colors.green[700],
         foregroundColor: Colors.white,

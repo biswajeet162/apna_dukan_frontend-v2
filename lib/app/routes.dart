@@ -81,14 +81,18 @@ class AppRoutes {
   static const String adminDashboard = '/admin/dashboard';
   static const String adminDashboardLayout = '/admin/dashboard/layout';
   static const String adminDashboardCategory = '/admin/dashboard/category';
+  static const String adminDashboardCategoryWithCategory = '/admin/dashboard/category/:categoryId';
+  static String adminDashboardCategoryWithCategoryId(String categoryId) => '/admin/dashboard/category/$categoryId';
   static const String adminDashboardSubcategory = '/admin/dashboard/subcategory';
   static const String adminDashboardProduct = '/admin/dashboard/product';
   static const String adminDashboardProductGroup = '/admin/dashboard/product-group';
   static const String adminLayoutEdit = '/admin/dashboard/layout/edit/:sectionId';
   static String adminLayoutEditWithId(String sectionId) => '/admin/dashboard/layout/edit/$sectionId';
   static const String adminLayoutAdd = '/admin/dashboard/layout/add-section';
-  static const String adminCategoryEdit = '/admin/dashboard/category/:categoryId';
-  static String adminCategoryEditWithId(String categoryId) => '/admin/dashboard/category/$categoryId';
+  static const String adminCategoryEdit = '/admin/dashboard/category/edit/:categoryId';
+  static String adminCategoryEditWithId(String categoryId) => '/admin/dashboard/category/edit/$categoryId';
+  static const String adminCategoryAdd = '/admin/dashboard/category/:categoryId/add-category';
+  static String adminCategoryAddWithCategoryId(String categoryId) => '/admin/dashboard/category/$categoryId/add-category';
 }
 
 

@@ -8,7 +8,12 @@ import '../../../../category/data/models/category_section_admin_response.dart';
 import '../widgets/add_category_modal.dart';
 
 class CategoryTab extends StatefulWidget {
-  const CategoryTab({super.key});
+  final String? initialCategoryId;
+
+  const CategoryTab({
+    super.key,
+    this.initialCategoryId,
+  });
 
   @override
   State<CategoryTab> createState() => _CategoryTabState();
@@ -57,8 +62,12 @@ class _CategoryTabState extends State<CategoryTab> with AutomaticKeepAliveClient
         _isLoadingSections = false;
       });
 
-      // Load first section by default
-      if (productCategorySections.isNotEmpty) {
+      // Load category from URL if provided
+      if (widget.initialCategoryId != null && productCategorySections.isNotEmpty) {
+        // Load all sections to find the one with the category
+        _loadCategoryFromUrl(widget.initialCategoryId!, productCategorySections);
+      } else if (productCategorySections.isNotEmpty) {
+        // Load first section by default
         _loadCategoriesForSection(productCategorySections.first.sectionId, expand: true);
       }
     } catch (e) {
@@ -66,6 +75,24 @@ class _CategoryTabState extends State<CategoryTab> with AutomaticKeepAliveClient
         _errorMessage = e.toString();
         _isLoadingSections = false;
       });
+    }
+  }
+
+  Future<void> _loadCategoryFromUrl(String categoryId, List<CatalogSection> sections) async {
+    // Try to find the category in each section
+    for (final section in sections) {
+      await _loadCategoriesForSection(section.sectionId, expand: false);
+      final categories = _categoriesBySection[section.sectionId] ?? [];
+      if (categories.any((cat) => cat.categoryId == categoryId)) {
+        setState(() {
+          _expandedSections.add(section.sectionId);
+        });
+        return; // Found the category, stop searching
+      }
+    }
+    // If not found, expand first section
+    if (sections.isNotEmpty) {
+      _loadCategoriesForSection(sections.first.sectionId, expand: true);
     }
   }
 
@@ -298,7 +325,7 @@ class _CategoryTabState extends State<CategoryTab> with AutomaticKeepAliveClient
             children: [
               if (isExpanded && !isLoading && error == null)
                 IconButton(
-                  onPressed: () => _showAddCategoryModal(section),
+                  onPressed: () => _navigateToAddCategory(section),
                   icon: const Icon(Icons.add),
                   iconSize: 24,
                   color: Colors.green[700],
@@ -504,14 +531,39 @@ class _CategoryTabState extends State<CategoryTab> with AutomaticKeepAliveClient
     );
   }
 
-  void _onCategoryTap(CategoryAdminModel category) async {
-    final result = await context.push<bool>(AppRoutes.adminCategoryEditWithId(category.categoryId));
-    // If category was updated or deleted, refresh the list
-    if (result == true) {
-      await _loadCategoriesForSection(category.sectionId, expand: true);
-    }
+  void _onCategoryTap(CategoryAdminModel category) {
+    // Update URL with categoryId and navigate to edit page
+    context.go(AppRoutes.adminCategoryEditWithId(category.categoryId));
   }
 
+  void _navigateToAddCategory(CatalogSection section) {
+    // Get the first category in this section to use for the URL, or use the current categoryId from URL
+    final categories = _categoriesBySection[section.sectionId] ?? [];
+    String categoryId;
+    
+    if (widget.initialCategoryId != null && 
+        categories.any((cat) => cat.categoryId == widget.initialCategoryId)) {
+      categoryId = widget.initialCategoryId!;
+    } else if (categories.isNotEmpty) {
+      categoryId = categories.first.categoryId;
+    } else {
+      // If no categories exist, we still need a categoryId for the route
+      // In this case, we'll need to create a temporary one or use the section's first category
+      // For now, let's use the first category from any section, or navigate without categoryId
+      // Actually, let's just use the first category from the first section
+      if (_sections.isNotEmpty && _categoriesBySection[_sections.first.sectionId]?.isNotEmpty == true) {
+        categoryId = _categoriesBySection[_sections.first.sectionId]!.first.categoryId;
+      } else {
+        // Fallback: navigate to category list and show modal
+        _showAddCategoryModal(section);
+        return;
+      }
+    }
+    
+    // Navigate to add category page
+    context.go(AppRoutes.adminCategoryAddWithCategoryId(categoryId));
+  }
+  
   void _showAddCategoryModal(CatalogSection section) {
     final categories = _categoriesBySection[section.sectionId] ?? [];
     showDialog(
