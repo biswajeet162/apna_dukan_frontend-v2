@@ -177,40 +177,193 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
       );
     }
 
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Admin Dashboard'),
-        backgroundColor: Colors.green[700],
-        foregroundColor: Colors.white,
-        bottom: TabBar(
-          controller: _tabController,
-          indicatorColor: Colors.white,
-          labelColor: Colors.white,
-          unselectedLabelColor: Colors.white70,
-          tabs: const [
-            Tab(icon: Icon(Icons.view_module), text: 'Layout'),
-            Tab(icon: Icon(Icons.category), text: 'Categories'),
-            Tab(icon: Icon(Icons.subdirectory_arrow_right), text: 'Subcategories'),
-            Tab(icon: Icon(Icons.shopping_bag), text: 'Products'),
-            Tab(icon: Icon(Icons.inventory_2), text: 'Product Groups'),
+    // If no tab is specified, show the dashboard overview with clickable items
+    if (widget.tab == null) {
+      return Scaffold(
+        appBar: AppBar(
+          title: const Text('Admin Dashboard'),
+          backgroundColor: Colors.green[700],
+          foregroundColor: Colors.white,
+        ),
+        body: Column(
+          children: [
+            // Header
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.green[50],
+                border: Border(
+                  bottom: BorderSide(
+                    color: Colors.grey[300]!,
+                    width: 1,
+                  ),
+                ),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text(
+                    'Operations',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.grey,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            // Grid of operation cards
+            Expanded(
+              child: GridView.count(
+                crossAxisCount: 2,
+                padding: const EdgeInsets.all(16),
+                crossAxisSpacing: 16,
+                mainAxisSpacing: 16,
+                childAspectRatio: 1.5,
+                children: [
+                  _buildDashboardCard(
+                    context,
+                    title: 'Layout',
+                    icon: Icons.view_module,
+                    route: AppRoutes.adminDashboardLayout,
+                  ),
+                  _buildDashboardCard(
+                    context,
+                    title: 'Category',
+                    icon: Icons.category,
+                    route: AppRoutes.adminDashboardCategory,
+                  ),
+                  _buildDashboardCard(
+                    context,
+                    title: 'Subcategory',
+                    icon: Icons.subdirectory_arrow_right,
+                    route: AppRoutes.adminDashboardSubcategory,
+                  ),
+                ],
+              ),
+            ),
           ],
         ),
+        bottomNavigationBar: AppNavbar(
+          currentIndex: _getNavbarIndex(),
+          onTap: _onNavTap,
+          isAdmin: true,
+        ),
+      );
+    }
+
+    // If tab is specified, show only that specific operation with back button
+    String title = _getTitleForTab(widget.tab!);
+    Widget content = _getContentForTab(widget.tab!);
+    
+    return Scaffold(
+      appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () {
+            context.go(AppRoutes.adminDashboard);
+          },
+        ),
+        title: Text(title),
+        backgroundColor: Colors.green[700],
+        foregroundColor: Colors.white,
       ),
-      body: TabBarView(
-        controller: _tabController,
-        // Use keys to preserve state when widget tree rebuilds
-        children: const [
-          LayoutTab(key: ValueKey('layout_tab')),
-          CategoryTab(key: ValueKey('category_tab')),
-          SubcategoryTab(key: ValueKey('subcategory_tab')),
-          ProductTab(key: ValueKey('product_tab')),
-          ProductGroupTab(key: ValueKey('product_group_tab')),
-        ],
-      ),
+      body: content,
       bottomNavigationBar: AppNavbar(
         currentIndex: _getNavbarIndex(),
         onTap: _onNavTap,
         isAdmin: true,
+      ),
+    );
+  }
+
+  String _getTitleForTab(String tab) {
+    switch (tab) {
+      case 'layout':
+        return 'Layout';
+      case 'category':
+        return 'Category';
+      case 'subcategory':
+        return 'Subcategory';
+      case 'product':
+        return 'Product';
+      case 'product-group':
+        return 'Product Group';
+      default:
+        return 'Admin Dashboard';
+    }
+  }
+
+  Widget _getContentForTab(String tab) {
+    switch (tab) {
+      case 'layout':
+        return const LayoutTab(key: ValueKey('layout_tab'));
+      case 'category':
+        return const CategoryTab(key: ValueKey('category_tab'));
+      case 'subcategory':
+        return const SubcategoryTab(key: ValueKey('subcategory_tab'));
+      case 'product':
+        return const ProductTab(key: ValueKey('product_tab'));
+      case 'product-group':
+        return const ProductGroupTab(key: ValueKey('product_group_tab'));
+      default:
+        return const LayoutTab(key: ValueKey('layout_tab'));
+    }
+  }
+
+  Widget _buildDashboardCard(
+    BuildContext context, {
+    required String title,
+    required IconData icon,
+    required String route,
+  }) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: () {
+          context.go(route);
+        },
+        borderRadius: BorderRadius.circular(12),
+        child: Container(
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: Colors.grey[300]!,
+              width: 1,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.grey[300]!,
+                blurRadius: 4,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                icon,
+                size: 32,
+                color: Colors.green[700],
+              ),
+              const SizedBox(height: 8),
+              Text(
+                title,
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.grey[800],
+                ),
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
