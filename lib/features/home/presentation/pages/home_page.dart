@@ -1003,6 +1003,7 @@ class _HomeContentState extends State<HomeContent> {
     final imageUrl = subCategory.imageUrl.isNotEmpty
         ? subCategory.imageUrl.first
         : null;
+    final isDisabled = !subCategory.enabled;
 
     return GestureDetector(
       onTap: () {
@@ -1072,6 +1073,34 @@ class _HomeContentState extends State<HomeContent> {
                   ),
                 ),
               ),
+              if (isDisabled)
+                Positioned.fill(
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.6),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                ),
+              if (isDisabled)
+                Positioned(
+                  top: 0,
+                  left: 0,
+                  child: Container(
+                    width: 24,
+                    height: 24,
+                    decoration: BoxDecoration(
+                      color: Colors.red[700],
+                      shape: BoxShape.circle,
+                      border: Border.all(color: Colors.white, width: 2),
+                    ),
+                    child: const Icon(
+                      Icons.flag,
+                      color: Colors.white,
+                      size: 14,
+                    ),
+                  ),
+                ),
               // Pencil icon in edit mode - top right corner
               if (isEditMode)
                 Positioned(
@@ -1103,7 +1132,7 @@ class _HomeContentState extends State<HomeContent> {
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 13,
-                color: Colors.grey[800],
+                color: isDisabled ? Colors.grey[500] : Colors.grey[800],
                 fontWeight: FontWeight.bold,
                 height: 1.2,
               ),
