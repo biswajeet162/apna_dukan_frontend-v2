@@ -39,6 +39,11 @@ class ApiEndpoints {
   static const String refreshToken = '/auth/token/refresh';
   static const String logout = '/auth/logout';
 
+  // Cart endpoints
+  static const String cart = '/cart';
+  static const String cartItems = '/cart/items';
+  static String cartItemByVariantId(String variantId) => '/cart/items/$variantId';
+
   // Helper methods
   static String categoriesForSectionUrl(String sectionId) {
     return categoriesForSection.replaceAll('{sectionId}', sectionId);

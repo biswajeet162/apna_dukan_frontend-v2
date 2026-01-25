@@ -39,6 +39,17 @@ class _HomePageState extends State<HomePage> {
     super.initState();
     _authService = AuthService(ServiceLocator().secureStorage);
     _checkAdminStatus();
+    // Load cart on app start
+    _loadCart();
+  }
+
+  Future<void> _loadCart() async {
+    try {
+      await ServiceLocator().cartController.loadCart();
+    } catch (e) {
+      // Silently fail - cart will load when user adds items
+      print('Failed to load cart on app start: $e');
+    }
   }
 
   Future<void> _checkAdminStatus() async {
@@ -50,20 +61,36 @@ class _HomePageState extends State<HomePage> {
   }
 
   void _onNavTap(int index) {
-    switch (index) {
-      case 0:
-        context.go(AppRoutes.home);
-        break;
-      case 1:
-        context.go(AppRoutes.categories);
-        break;
-      case 2:
+    // Get cart controller to check if cart icon is visible
+    final cartController = ServiceLocator().cartController;
+    final hasCart = cartController.hasItems;
+    
+    // Navigation based on index
+    // Index mapping:
+    // 0: Home
+    // 1: Categories
+    // 2: Cart (if hasCart) OR Order (if !hasCart)
+    // 3: Order (if hasCart) OR Dashboard (if !hasCart && isAdmin)
+    // 4: Dashboard (if hasCart && isAdmin)
+    
+    if (index == 0) {
+      context.go(AppRoutes.home);
+    } else if (index == 1) {
+      context.go(AppRoutes.categories);
+    } else if (index == 2) {
+      if (hasCart) {
+        context.go(AppRoutes.cart);
+      } else {
         context.go(AppRoutes.orders);
-        break;
-      case 3:
-        // Dashboard button (only visible for admin)
+      }
+    } else if (index == 3) {
+      if (hasCart) {
+        context.go(AppRoutes.orders);
+      } else if (_isAdmin) {
         context.go(AppRoutes.adminDashboard);
-        break;
+      }
+    } else if (index == 4 && hasCart && _isAdmin) {
+      context.go(AppRoutes.adminDashboard);
     }
   }
 
@@ -93,10 +120,33 @@ class _HomePageState extends State<HomePage> {
           context.go(uri.toString());
         },
       ),
-      bottomNavigationBar: AppNavbar(
-        currentIndex: 0, // Home tab
-        onTap: _onNavTap,
-        isAdmin: _isAdmin,
+      bottomNavigationBar: ValueListenableBuilder<int>(
+        valueListenable: ServiceLocator().cartController,
+        builder: (context, totalItems, child) {
+          // Calculate current index based on route
+          int currentIndex = 0;
+          final router = GoRouter.maybeOf(context);
+          if (router != null) {
+            final currentPath = router.routerDelegate.currentConfiguration.uri.path;
+            if (currentPath == AppRoutes.home) {
+              currentIndex = 0;
+            } else if (currentPath.startsWith(AppRoutes.categories) || currentPath.startsWith('/categories')) {
+              currentIndex = 1;
+            } else if (currentPath == AppRoutes.cart) {
+              currentIndex = totalItems > 0 ? 2 : 2; // Cart is at index 2 if visible
+            } else if (currentPath == AppRoutes.orders || currentPath.startsWith('/orders')) {
+              currentIndex = totalItems > 0 ? 3 : 2; // Orders is at index 3 if cart visible, else 2
+            } else if (currentPath == AppRoutes.adminDashboard || currentPath.startsWith('/admin')) {
+              currentIndex = _isAdmin ? (totalItems > 0 ? 4 : 3) : 2;
+            }
+          }
+          
+          return AppNavbar(
+            currentIndex: currentIndex,
+            onTap: _onNavTap,
+            isAdmin: _isAdmin,
+          );
+        },
       ),
     );
   }

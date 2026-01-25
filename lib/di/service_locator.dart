@@ -49,6 +49,13 @@ import '../features/profile/data/datasources/profile_remote_datasource.dart';
 import '../features/profile/data/repositories/profile_repository.dart';
 import '../features/profile/domain/usecases/get_user_profile_usecase.dart';
 import '../features/profile/domain/usecases/get_user_addresses_usecase.dart';
+import '../features/cart/data/datasources/cart_remote_datasource.dart';
+import '../features/cart/data/repositories/cart_repository.dart';
+import '../features/cart/domain/usecases/get_cart_usecase.dart';
+import '../features/cart/domain/usecases/add_cart_item_usecase.dart';
+import '../features/cart/domain/usecases/update_cart_item_usecase.dart';
+import '../features/cart/domain/usecases/remove_cart_item_usecase.dart';
+import '../features/cart/presentation/cart_controller.dart';
 import '../core/storage/secure_storage.dart';
 
 class ServiceLocator {
@@ -69,6 +76,7 @@ class ServiceLocator {
   late final ProductListingRemoteDataSource _productListingRemoteDataSource;
   late final AuthRemoteDataSource _authRemoteDataSource;
   late final ProfileRemoteDataSource _profileRemoteDataSource;
+  late final CartRemoteDataSource _cartRemoteDataSource;
 
   // Repositories
   late final CatalogLayoutRepository _catalogLayoutRepository;
@@ -79,6 +87,7 @@ class ServiceLocator {
   late final HomeRepository _homeRepository;
   late final AuthRepository _authRepository;
   late final ProfileRepository _profileRepository;
+  late final CartRepository _cartRepository;
 
   // Use Cases
   late final GetCatalogLayoutUseCase _getCatalogLayoutUseCase;
@@ -112,6 +121,11 @@ class ServiceLocator {
   late final GetProductDetailsUseCase _getProductDetailsUseCase;
   late final LoginUseCase _loginUseCase;
   late final SignupUseCase _signupUseCase;
+  late final GetCartUseCase _getCartUseCase;
+  late final AddCartItemUseCase _addCartItemUseCase;
+  late final UpdateCartItemUseCase _updateCartItemUseCase;
+  late final RemoveCartItemUseCase _removeCartItemUseCase;
+  late final CartController _cartController;
 
   void init() {
     // Initialize core services
@@ -127,6 +141,7 @@ class ServiceLocator {
     _productListingRemoteDataSource = ProductListingRemoteDataSource(_dioClient);
     _authRemoteDataSource = AuthRemoteDataSource(_dioClient);
     _profileRemoteDataSource = ProfileRemoteDataSource(_dioClient);
+    _cartRemoteDataSource = CartRemoteDataSource(_dioClient);
 
     // Initialize repositories
     _catalogLayoutRepository = CatalogLayoutRepository(_catalogLayoutRemoteDataSource);
@@ -137,6 +152,7 @@ class ServiceLocator {
     _homeRepository = HomeRepository(_catalogLayoutRepository);
     _authRepository = AuthRepository(_authRemoteDataSource);
     _profileRepository = ProfileRepository(_profileRemoteDataSource);
+    _cartRepository = CartRepository(_cartRemoteDataSource);
 
     // Initialize use cases
     _getCatalogLayoutUseCase = GetCatalogLayoutUseCase(_catalogLayoutRepository);
@@ -170,6 +186,16 @@ class ServiceLocator {
     _getProductDetailsUseCase = GetProductDetailsUseCase(_productRepository);
     _loginUseCase = LoginUseCase(_authRepository);
     _signupUseCase = SignupUseCase(_authRepository);
+    _getCartUseCase = GetCartUseCase(_cartRepository);
+    _addCartItemUseCase = AddCartItemUseCase(_cartRepository);
+    _updateCartItemUseCase = UpdateCartItemUseCase(_cartRepository);
+    _removeCartItemUseCase = RemoveCartItemUseCase(_cartRepository);
+    _cartController = CartController(
+      _getCartUseCase,
+      _addCartItemUseCase,
+      _updateCartItemUseCase,
+      _removeCartItemUseCase,
+    );
   }
 
   // Getters
@@ -214,4 +240,9 @@ class ServiceLocator {
   LoginUseCase get loginUseCase => _loginUseCase;
   SignupUseCase get signupUseCase => _signupUseCase;
   ProfileRepository get profileRepository => _profileRepository;
+  GetCartUseCase get getCartUseCase => _getCartUseCase;
+  AddCartItemUseCase get addCartItemUseCase => _addCartItemUseCase;
+  UpdateCartItemUseCase get updateCartItemUseCase => _updateCartItemUseCase;
+  RemoveCartItemUseCase get removeCartItemUseCase => _removeCartItemUseCase;
+  CartController get cartController => _cartController;
 }

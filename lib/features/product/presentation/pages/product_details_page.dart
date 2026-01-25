@@ -7,6 +7,7 @@ import '../../../../di/service_locator.dart';
 import '../../data/models/product_details_model.dart';
 import '../../data/models/variant_model.dart';
 import '../../../../app/routes.dart';
+import '../../../cart/presentation/cart_controller.dart';
 
 class ProductDetailsPage extends StatefulWidget {
   final String productId;
@@ -94,16 +95,79 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
     }
   }
 
-  void _addToCart() {
+  void _addToCart() async {
     if (_product == null || _selectedVariant == null) return;
     
-    // TODO: Implement add to cart functionality
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Added ${_product!.name} to cart'),
-        backgroundColor: Colors.green[700],
-      ),
-    );
+    try {
+      // Get cart controller from service locator
+      final cartController = ServiceLocator().cartController;
+      
+      // Show loading
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Row(
+            children: [
+              const SizedBox(
+                width: 20,
+                height: 20,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                ),
+              ),
+              const SizedBox(width: 12),
+              const Text('Adding to cart...'),
+            ],
+          ),
+          backgroundColor: Colors.green[700],
+          duration: const Duration(seconds: 2),
+        ),
+      );
+      
+      // Add item to cart
+      await cartController.addItem(
+        _selectedVariant!.variantId,
+        1, // Default quantity is 1
+      );
+      
+      // Show success message
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Added ${_product!.name} to cart'),
+            backgroundColor: Colors.green[700],
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      }
+    } catch (e) {
+      // Show error message
+      if (mounted) {
+        String errorMessage = 'Failed to add to cart';
+        if (e.toString().contains('401') || e.toString().contains('Unauthorized')) {
+          errorMessage = 'Please login to add items to cart';
+        } else {
+          errorMessage = 'Failed to add to cart: ${e.toString()}';
+        }
+        
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(errorMessage),
+            backgroundColor: Colors.red[700],
+            duration: const Duration(seconds: 3),
+            action: (e.toString().contains('401') || e.toString().contains('Unauthorized'))
+                ? SnackBarAction(
+                    label: 'Login',
+                    textColor: Colors.white,
+                    onPressed: () {
+                      context.go(AppRoutes.login);
+                    },
+                  )
+                : null,
+          ),
+        );
+      }
+    }
   }
 
   @override
